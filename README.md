@@ -2,13 +2,13 @@
 
 Modular desktop **10" mini-rack housing system**, styled after NASA Mission Operations Control Room consoles. Each module is a self-contained 3D-printed plastic enclosure that houses small-form-factor 10" mini-rack equipment (Pi mounts, small routers, Stream Decks, mini displays).
 
-See `designdoc.md` (**v2.2**) for the full design specification.
+See `designdoc.md` (**v2.3**) for the full design specification.
 
 ## Repository layout
 
 ```
 Console10/
-├── designdoc.md                       Design Document v2.2
+├── designdoc.md                       Design Document v2.3
 ├── README.md                          This file
 │
 ├── Console10_isogrid.scad             CHEEK — integrated front + back rail hole patterns
@@ -22,12 +22,12 @@ Console10/
     └── module_render.png              3D perspective of assembled module — TBD
 ```
 
-**Status (v2.2):**
+**Status (v2.3):**
 
 | File | Status |
 |------|--------|
-| `designdoc.md` | ✓ v2.2 — 375 lines, all session decisions captured |
-| `Console10_isogrid.scad` | ✓ v2.2 cheek — integrated rails, perimeter strip, 6 mm thickness |
+| `designdoc.md` | ✓ v2.3 — slant aligned to {3,6} isogrid |
+| `Console10_isogrid.scad` | ✓ v2.3 cheek — slant aligned to isogrid, integrated rails, perimeter strip, 6 mm thickness |
 | `Console10_top_panel_half.scad` | ⏳ pending |
 | `Console10_bottom_panel_half.scad` | ⏳ pending |
 | `Console10_module.scad` | ⏳ pending (assembly file) |
@@ -44,16 +44,16 @@ Console10/
 - **All parts 3D-printed plastic**
 - **Target printer bed**: 256 × 256 × 256 mm
 
-## Module dimensions (per v2.2 §4 / §10)
+## Module dimensions (per v2.3 §4 / §10)
 
 | Dimension | Value |
 |-----------|-------|
 | Cheek silhouette | Right trapezoid, slant on FRONT |
 | Bottom (depth) | **228.6 mm** (9", locked) |
-| Back-edge height | **212.20 mm** (8.35") |
-| Top-edge length | **122.50 mm** (4.82") |
+| Back-edge height | **205.45 mm** (8.09") |
+| Top-edge length | **109.975 mm** (4.33") |
 | Front (slant) length | **237.25 mm** |
-| Slant angle | **26.57° from vertical** (= atan(0.5), locked) |
+| Slant angle | **30° from vertical** (= atan(√3/3), locked — aligned to isogrid) |
 | Cheek thickness | 6 mm |
 | Module interior width (cheek-to-cheek) | 261.525 mm (pinned by rack standard) |
 | Module exterior width (with cheeks) | ~271.5 mm |

@@ -1,8 +1,8 @@
 # CONSOLE10 — DESIGN DOCUMENT
-*Version 2.2 — Construction architecture locked.*
+*Version 2.3 — Slant angle aligned to isogrid.*
 *Prepared for John M. Knight, 2026-05-17.*
 
-> v2.0 reset the project. v2.1 locked initial geometry. v2.2 corrects the cheek-silhouette orientation, locks rail offsets and supports, integrates rails into cheeks, and locks construction & assembly for a 256 × 256 × 256 mm printer bed.
+> v2.0 reset the project. v2.1 locked initial geometry. v2.2 corrects the cheek-silhouette orientation, locks rail offsets and supports, integrates rails into cheeks, and locks construction & assembly for a 256 × 256 × 256 mm printer bed. v2.3 adjusts the slant angle from atan(0.5) = 26.57° to atan(√3/3) = 30° from vertical so the slant edge runs parallel to one set of {3,6} isogrid triangle edges; back height and top length update accordingly. v2.3 adjusts the slant angle from atan(0.5) = 26.57° to atan(√3/3) = 30° from vertical so the slant edge runs parallel to one set of {3,6} isogrid triangle edges; back height and top length update accordingly.
 
 ---
 
@@ -61,27 +61,27 @@ No visible fasteners on cheek or top exterior surfaces.
 |--------|-----------|----------|
 | Front-bottom | (0, 0) | Floor / front lower corner |
 | Back-bottom | (228.6, 0) | Floor / back lower corner |
-| Back-top | (228.6, 212.20) | Back upper corner |
-| Front-top | (106.10, 212.20) | Front upper corner — top end of slant |
+| Back-top | (228.6, 205.45) | Back upper corner |
+| Front-top | (118.625, 205.45) | Front upper corner — top end of slant |
 
 ### 4.1 Edge lengths
 
 | Edge | Length | Notes |
 |------|--------|-------|
 | Bottom | **228.6 mm** (9") | **LOCKED** — pinned dimension |
-| Back (vertical) | **212.20 mm** (8.35") | Derived |
-| Top (horizontal) | **122.50 mm** (4.82") | Derived |
+| Back (vertical) | **205.45 mm** (8.09") | Derived |
+| Top (horizontal) | **109.975 mm** (4.33") | Derived |
 | Front (slant) | **237.25 mm** | Derived |
 
 ### 4.2 Locked invariants
 
-- **Slant angle = 26.57° from vertical** (= atan(0.5)) — **LOCKED**
+- **Slant angle = 30° from vertical** (= atan(√3/3)) — **LOCKED** — aligned to {3,6} isogrid triangle edges
 - **Bottom depth = 228.6 mm** — **LOCKED**
 - **1U bottom gap** (no rail holes in the bottom 1U region of the slant) — **LOCKED** structural requirement
 - **4U front-rail mounting** — **MINIMUM** target capacity (always exactly 4U in current geometry)
 - **Top + bottom margins** — flexible parametrically; in current v2.2 lock, top margin = 15 mm, bottom margin = the 1U gap exactly
 
-These five locks reduce the cheek to a single degree of freedom (front_len, which then derives back and top). The v2.2 lock picks `top_margin = 15 mm` → `front_len = 237.25 mm` → back and top derived.
+These five locks reduce the cheek to a single degree of freedom (front_len, which then derives back and top). The v2.3 lock picks `slant_angle = 30°` and `top_margin = 15 mm` → `front_len = 237.25 mm` → back_h = 205.45 mm, top_len = 109.975 mm.
 
 ### 4.3 Cheek thickness & isogrid
 
@@ -131,10 +131,10 @@ Heat-set inserts are installed **perpendicular to the cheek interior face** (i.e
 
 | U slot | Max depth | Binding |
 |--------|-----------|---------|
-| U1 | 88.9 mm (3.50") | Floor at U1 bottom |
-| U2 | 177.8 mm (7.00") | Floor at U2 bottom |
-| U3 | 166.7 mm (6.56") | Back face at U3 top |
-| U4 | 144.5 mm (5.69") | Back face at U4 top |
+| U1 | 77.0 mm (3.03") | Floor at U1 bottom |
+| U2 | 154.0 mm (6.06") | Floor at U2 bottom |
+| U3 | 161.3 mm (6.35") | Back face at U3 top |
+| U4 | 135.7 mm (5.34") | Back face at U4 top |
 
 Depth measured perpendicular to the slanted front face, assuming rigid rectangular gear with body perpendicular to its mounting face.
 
@@ -144,12 +144,12 @@ The cheek also absorbs the back rail. No separate rail part.
 
 ### 6.1 Hole layout along the back vertical edge
 
-Back edge length = 212.20 mm. Back rail is 4U starting at the floor (no bottom offset — floor cutoff is not an issue on a vertical edge).
+Back edge length = 205.45 mm. Back rail is 4U starting at the floor (no bottom offset — floor cutoff is not an issue on a vertical edge).
 
 | Region | Vertical range (mm) | Length | Notes |
 |--------|---------------------|--------|-------|
 | 4U mounting | 0 → 177.80 | 177.80 mm (4U) | EIA-310 hole pattern |
-| Top stub | 177.80 → 212.20 | 34.40 mm | Unused (slant geometry) |
+| Top stub | 177.80 → 205.45 | 27.65 mm | Unused (slant geometry) |
 
 ### 6.2 Back-rail hole positions (per cheek)
 
@@ -166,22 +166,22 @@ Back edge length = 212.20 mm. Back rail is 4U starting at the floor (no bottom o
 
 | U slot | Max depth | Notes |
 |--------|-----------|-------|
-| U1 | 206.4 mm (8.12") | Bottom — deepest |
-| U2 | 184.1 mm (7.25") | |
-| U3 | 161.9 mm (6.38") | |
-| U4 | 139.7 mm (5.50") | Top — clipped by slant |
+| U1 | 202.9 mm (7.99") | Bottom — deepest |
+| U2 | 177.3 mm (6.98") | |
+| U3 | 151.6 mm (5.97") | |
+| U4 | 125.9 mm (4.96") | Top — clipped by slant |
 
 ## 7. Top + bottom supports — integrated into panels
 
 ### 7.1 Top support
 
-Triangular cross-section in side view, fills the 15 mm top margin region of the slant. Hypotenuse along the slant, right angle at the cheek-interior corner. Cross-section ≈ 15 mm × 15 mm legs.
+Triangular cross-section in side view, fills the 15 mm top margin region of the slant. Hypotenuse along the slant, right angle at the cheek-interior corner. Legs: 7.50 mm horizontal × 12.99 mm vertical (= 15 × sin/cos 30°).
 
 In the v2.2 lock, this support is **integrated as the front flange of the top panel** — the panel's front edge has a downward-extending triangular flange that fills the top margin region and joins both cheeks.
 
 ### 7.2 Bottom support
 
-Right triangle fills the 1U bottom gap. Cross-section legs: 19.88 mm horizontal × 39.76 mm vertical, with hypotenuse along the slant.
+Right triangle fills the 1U bottom gap. Cross-section legs: 22.225 mm horizontal × 38.494 mm vertical, with hypotenuse along the slant.
 
 Integrated as the **front flange of the bottom panel** — the panel's front edge has an upward-extending triangular flange that fills the 1U gap and joins both cheeks.
 
@@ -195,7 +195,7 @@ Eliminates two separate support parts (4 fewer SCAD files, 4 fewer printed piece
 
 | Panel | Depth (front-back) | Width (cheek-to-cheek) |
 |-------|--------------------|------------------------|
-| Top panel | 122.5 mm | 261.525 mm |
+| Top panel | 109.975 mm | 261.525 mm |
 | Bottom panel | 228.6 mm | 261.525 mm |
 
 **Interior width = 261.525 mm**, derived from: rail hole spacing (236.525 mm) + rail width (25 mm). Pinned by the 10" mini-rack standard.
@@ -217,7 +217,7 @@ Both panels exceed the 256 mm printer bed in the cheek-to-cheek dimension (261.5
 
 Each half = ~130.76 mm wide × full depth × full flange height.
 
-- Top half: 130.76 × 122.5 × 15 mm (with triangular front flange) → fits 256 bed
+- Top half: 130.76 × 109.975 × 15 mm (with triangular front flange) → fits 256 bed
 - Bottom half: 130.76 × 228.6 × 15 mm (with triangular front flange) → fits 256 bed
 
 Each half inherits the front + back + ONE side flange (left or right). The centerline mating edge has no flange.
@@ -232,7 +232,7 @@ Apollo command-module-panel-style castellated edge — alternating tabs and slot
 |-------|-------|
 | Pattern | 5 tabs + 4 slots (T-S-T-S-T-S-T-S-T, symmetric) |
 | Segment count | 9 |
-| Segment width | 13.61 mm (122.5 mm ÷ 9) |
+| Segment width | 12.22 mm (109.975 mm ÷ 9) |
 | Tab protrusion past centerline | 12 mm |
 | Tab orientation | Left half has 5 tabs; right half has 4 tabs (mirror, interlocking) |
 
@@ -261,8 +261,8 @@ Apollo command-module-panel-style castellated edge — alternating tabs and slot
 
 | Part | Footprint | Fits | Notes |
 |------|-----------|------|-------|
-| Cheek | 228.6 × 212.2 × ~5 mm + isogrid features | ✓ | Prints flat; longest dim 228.6 mm |
-| Top panel half | 130.76 × 122.5 × 15 mm | ✓ | Prints with flat side on bed, flanges up |
+| Cheek | 228.6 × 205.45 × ~5 mm + isogrid features | ✓ | Prints flat; longest dim 228.6 mm |
+| Top panel half | 130.76 × 109.975 × 15 mm | ✓ | Prints with flat side on bed, flanges up |
 | Bottom panel half | 130.76 × 228.6 × 15 mm | ✓ | Same as top, deeper |
 
 ### 9.2 Print orientation
@@ -276,10 +276,10 @@ Apollo command-module-panel-style castellated edge — alternating tabs and slot
 |-----------|-------|-------|
 | Width (cheek-to-cheek, with 5 mm cheeks) | ~271.5 mm | 261.525 interior + 2 × 5 mm cheek |
 | Depth (bottom edge) | 228.6 mm (9") | Same as cheek |
-| Height (back) | 212.20 mm (8.35") | Same as cheek back edge |
-| Height (front, top of slant) | 212.20 mm | Front-top corner is at the same y as back-top |
+| Height (back) | 205.45 mm (8.09") | Same as cheek back edge |
+| Height (front, top of slant) | 205.45 mm | Front-top corner is at the same y as back-top |
 | Front face height (along slant) | 237.25 mm | Length of slanted face |
-| Front face angle from vertical | 26.57° | Operator-facing slant |
+| Front face angle from vertical | 30° | Operator-facing slant, aligned to isogrid |
 
 ## 11. Variants (preserved from v2.1)
 
@@ -365,6 +365,11 @@ Exact M3 counts pinned when SCAD layout is final.
   9. **Top + bottom panels split into L/R halves** — forced by 261.5 mm interior width vs 256 mm printer bed
   10. **Castellated finger joint at panel centerlines** — Apollo command-module style; 5 tabs + 4 slots on top panel, 9 tabs + 8 slots on bottom panel
   11. **Part count down to 6 per module** (from 10 in v2.1)
+- **v2.3** — Slant angle aligned to isogrid:
+  1. **Slant angle 26.57° → 30° from vertical** (= atan(√3/3); rise:run = √3:1). The new angle places the slant exactly parallel to one set of {3,6} isogrid triangle edges, eliminating the 3.43° visual delta between slant and isogrid present in v2.2.
+  2. **Cascading dimension updates**: back_h 212.20 → 205.45 mm, top_len 122.50 → 109.975 mm. Equipment-depth tables (§5.4, §6.3), bottom support legs (§7.2), top support legs (§7.1), top panel depth (§8.1, §8.3), and top panel finger-joint segment width (§8.4) all recalculated.
+  3. **Bottom edge** stays aligned with the 0° isogrid edge set (was already aligned in v2.2). **Back vertical edge** remains the only un-aligned cheek edge — geometrically unavoidable for any 60°-symmetric isogrid pattern with a horizontal floor.
+  4. **No standards changes** — 10" mini-rack compliance, EIA-310 hole pattern, 1U bottom gap, 4U mounting, 15 mm top margin, 256 mm bed all preserved.
 
 ### 15.3 References
 

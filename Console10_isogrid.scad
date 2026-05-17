@@ -1,6 +1,6 @@
 // =============================================================================
-// CONSOLE10 — Integrated Cheek (v2.2)
-// Parametric OpenSCAD source, per Design Document v2.2
+// CONSOLE10 — Integrated Cheek (v2.3)
+// Parametric OpenSCAD source, per Design Document v2.3
 //
 // Right trapezoid with FRONT slant (operator-facing). Open isogrid pattern
 // with regular {3,6} triangular tiling. Front rail AND back rail are both
@@ -15,13 +15,19 @@
 //   - Back rail integrated into cheek (was a separate part in v2.1)
 //   - Cheek base thickness 6 mm (was 3 mm) — accommodates 10-32 inserts
 //   - 1U bottom gap on front rail; 4U mounting; 15 mm top margin
+//
+// v2.3 changes from v2.2:
+//   - Slant angle 26.57 deg -> 30 deg from vertical (= atan(sqrt(3)/3))
+//     New angle is parallel to one set of {3,6} isogrid triangle edges
+//   - Cascading: back_h 212.20 -> 205.45, top_len 122.50 -> 109.975
+//   - No standards or rail-layout changes
 // =============================================================================
 
 // -----------------------------------------------------------------------------
 // [Geometry — LOCKED per Design Document v2.2 §4]
 // -----------------------------------------------------------------------------
 bottom_len    = 228.6;     // LOCKED — bottom edge length (mm, 9")
-slant_angle_v = 26.565;    // LOCKED — slant angle from vertical (degrees) = atan(0.5)
+slant_angle_v = 30;        // LOCKED — slant angle from vertical (degrees) = atan(sqrt(3)/3) — aligned to isogrid
 top_margin    = 15.0;      // LOCKED — top margin along slant (mm)
 
 // -----------------------------------------------------------------------------
