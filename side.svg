@@ -1,0 +1,68 @@
+// Panel parameters
+panel_w = 230;
+panel_h = 160;
+
+// Isogrid parameters
+s      = 20;    // nominal spacing
+t      = 2.5;   // rib thickness
+h_tri  = s * sqrt(3) / 2;
+
+// How many cells to cover the panel
+nx = ceil(panel_w / s) + 2;
+ny = ceil(panel_h / h_tri) + 2;
+
+// Master shape: solid panel
+difference() {
+    square([panel_w, panel_h], center = false);
+
+    // Subtract pockets (tri-hex tiling)
+    for (iy = -1; iy <= ny; iy++) {
+        for (ix = -1; ix <= nx; ix++) {
+
+            // Base coordinates for this node
+            x0 = ix * s + (iy % 2 == 0 ? 0 : s/2);
+            y0 = iy * h_tri;
+
+            // Hex pocket at node
+            hex_pocket(x0, y0, s, t);
+
+            // Upward triangle pocket above
+            tri_pocket_up(x0, y0 + h_tri/2, s, t);
+
+            // Downward triangle pocket below
+            tri_pocket_down(x0, y0 - h_tri/2, s, t);
+        }
+    }
+}
+
+// --- Pocket primitives ---
+
+module hex_pocket(cx, cy, s, t) {
+    r = s/2 - t/2;
+    polygon(points = [
+        [cx + r,              cy],
+        [cx + r/2,            cy + r*sqrt(3)/2],
+        [cx - r/2,            cy + r*sqrt(3)/2],
+        [cx - r,              cy],
+        [cx - r/2,            cy - r*sqrt(3)/2],
+        [cx + r/2,            cy - r*sqrt(3)/2]
+    ]);
+}
+
+module tri_pocket_up(cx, cy, s, t) {
+    r = s/2 - t/2;
+    polygon(points = [
+        [cx,                  cy + r*sqrt(3)/2],
+        [cx - r,              cy - r*sqrt(3)/2],
+        [cx + r,              cy - r*sqrt(3)/2]
+    ]);
+}
+
+module tri_pocket_down(cx, cy, s, t) {
+    r = s/2 - t/2;
+    polygon(points = [
+        [cx,                  cy - r*sqrt(3)/2],
+        [cx - r,              cy + r*sqrt(3)/2],
+        [cx + r,              cy + r*sqrt(3)/2]
+    ]);
+}

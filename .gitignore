@@ -1,0 +1,33 @@
+﻿# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+
+# OpenSCAD intermediate
+*.csg
+
+# 3D slicer output (STL files ARE tracked as deliverables)
+*.gcode
+*.3mf
+*.bgcode
+
+# OS noise
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editors / IDE
+.vscode/
+.idea/
+*.swp
+*~
+
+# Temp / build artifacts
+*.bak
+*.tmp
+*.log
+out.tmp
+err.tmp
