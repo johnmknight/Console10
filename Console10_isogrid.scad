@@ -1,10 +1,12 @@
 // =============================================================================
-// CONSOLE10 — Cheek (Isogrid)  v2.4
+// CONSOLE10 — Cheek (Isogrid)  v3.0
 // Trapezoidal right-trapezoid silhouette, slant on FRONT, 30° from vertical.
 // 10 mm thick.  Interior face has full-coverage {3,6} isogrid pockets.
 // Rail-mount holes are drilled into the slant + back EDGE FACES, perpendicular
-// to each edge.  Top + bottom edges have channels on the interior face that
-// accept the top/bottom panel tabs.
+// to each edge.
+// v3.1 joinery: BOTH the bottom AND top edges have a rabbet groove that
+// receives the side ridge of the bottom / top panel (4x4, symmetric joinery).
+// (Old v2.4 tab-channels removed.)
 // =============================================================================
 
 // ---------- LOCKED PARAMETERS (do not edit without bumping doc rev) -----------
@@ -25,9 +27,15 @@ pattern_rot  = 0;          // isogrid rotation in degrees
 hole_d_10_32   = 4.2;      // pilot diameter for 10-32 insert, mm
 hole_depth     = 8;        // depth into cheek thickness, mm
 
-// Top + bottom panel channel (on cheek interior face)
-channel_depth = 4;         // depth into cheek thickness, mm
-channel_tall  = 6;         // height along edge direction, mm (matches panel t)
+// Bottom-edge rabbet — receives the bottom panel's side ridge.
+// Values MUST match Console10_bottom.scad (ridge_width / ridge_height /
+// ridge_inset / ridge_setback). Inset is measured from the EXTERIOR face (Z=0),
+// assuming the cheek's exterior is flush with the floor panel's side edge.
+ridge_w       = 4;         // ridge width  (across cheek thickness, Z)
+ridge_h       = 4;         // ridge height (cut depth up into the bottom edge, Y)
+ridge_inset   = 4;         // from exterior face (Z=0) to the ridge outer face
+ridge_setback = 20;        // from the front edge (x=0) to the start of the ridge
+rabbet_clear  = 0.4;       // fit clearance
 
 // ---------- DERIVED ---------------------------------------------------------
 SQRT3 = sqrt(3);
@@ -149,8 +157,8 @@ module back_edge_holes() {
         u_bot = u_idx * U;
         for (e = eia_offsets) {
             v = u_bot + e;
-            // v=6.35 skipped: ~1mm overlap with bottom channel (math-verified)
-            if (v - hole_d_10_32/2 > channel_tall) {
+            // skip any hole that would clip the bottom rabbet groove
+            if (v - hole_d_10_32/2 > ridge_h + rabbet_clear) {
                 translate([bottom_len, v, panel_t / 2])
                     rotate([0, -90, 0])
                         translate([0, 0, -0.1])
@@ -160,16 +168,20 @@ module back_edge_holes() {
     }
 }
 
-// Top edge channel — cut into interior face (+Z side), along the top edge
-module top_channel() {
-    translate([v_front_top[0], v_front_top[1] - channel_tall, panel_t - channel_depth - 0.01])
-        cube([top_len + 0.02, channel_tall + 0.01, channel_depth + 0.02]);
+// Bottom-edge rabbet — groove cut UP into the bottom edge to receive the
+// floor panel's side ridge. Runs along the bottom edge (x), positioned across
+// the thickness (Z) to match the ridge.
+module bottom_rabbet() {
+    ridge_len = bottom_len - ridge_setback;
+    translate([ridge_setback, -0.01, ridge_inset - rabbet_clear/2])
+        cube([ridge_len, ridge_h + rabbet_clear, ridge_w + rabbet_clear]);
 }
 
-// Bottom edge channel — cut into interior face, along bottom edge
-module bottom_channel() {
-    translate([-0.01, 0, panel_t - channel_depth - 0.01])
-        cube([bottom_len + 0.02, channel_tall + 0.01, channel_depth + 0.02]);
+// Top-edge rabbet — groove cut DOWN into the top edge to receive the top
+// panel's side ridge (mirror of bottom_rabbet, runs the full top edge).
+module top_rabbet() {
+    translate([v_front_top[0], back_h - (ridge_h + rabbet_clear), ridge_inset - rabbet_clear/2])
+        cube([top_len, ridge_h + rabbet_clear + 1, ridge_w + rabbet_clear]);
 }
 
 // ---------- ASSEMBLED CHEEK -------------------------------------------------
@@ -187,9 +199,9 @@ module cheek() {
         // Rail-mount holes on slant + back edges
         slant_edge_holes();
         back_edge_holes();
-        // Panel-tab channels on top + bottom edges (interior face)
-        top_channel();
-        bottom_channel();
+        // v3.1: bottom + top edge rabbets receive the floor / top panel ridges
+        bottom_rabbet();
+        top_rabbet();
     }
 }
 
