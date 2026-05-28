@@ -1,7 +1,8 @@
 // =============================================================================
 // CONSOLE10 — Cheek (Isogrid)  v3.0
 // Trapezoidal right-trapezoid silhouette, slant on FRONT, 30° from vertical.
-// 10 mm thick.  Interior face has full-coverage {3,6} isogrid pockets.
+// 10 mm thick.  EXTERIOR face has the {3,6} isogrid pockets (v3.3 moved them
+// from the interior to the outside face).
 // Rail-mount holes are drilled into the slant + back EDGE FACES, perpendicular
 // to each edge.
 // v3.1 joinery: BOTH the bottom AND top edges have a rabbet groove that
@@ -18,10 +19,13 @@ panel_t       = 10;        // cheek thickness, mm  (v2.4: was 6)
 // Isogrid
 spacing      = 20;         // triangle edge length, mm
 rib          = 2.5;        // rib width, mm
-pocket_d     = 1.8;        // pocket depth, mm  (use through_cut for see-through)
+pocket_d     = 5;          // pocket depth, mm  (use through_cut for see-through)
 fillet_r     = 1.59;       // inner-corner fillet radius, mm
 through_cut  = false;
 pattern_rot  = 0;          // isogrid rotation in degrees
+iso_edge_fill = spacing/2; // fill the OUTER ring(s) solid: inset the pocket field
+                           // this far from every edge so the deep pockets clear
+                           // the rabbets / inserts / rail holes (tune to taste)
 
 // Rail-mount holes (edge-drilled, 10-32)
 hole_d_10_32   = 4.2;      // pilot diameter for 10-32 insert, mm
@@ -31,11 +35,20 @@ hole_depth     = 8;        // depth into cheek thickness, mm
 // Values MUST match Console10_bottom.scad (ridge_width / ridge_height /
 // ridge_inset / ridge_setback). Inset is measured from the EXTERIOR face (Z=0),
 // assuming the cheek's exterior is flush with the floor panel's side edge.
-ridge_w       = 4;         // ridge width  (across cheek thickness, Z)
-ridge_h       = 4;         // ridge height (cut depth up into the bottom edge, Y)
-ridge_inset   = 4;         // from exterior face (Z=0) to the ridge outer face
+ridge_w       = 10/3;      // tongue width (equal thirds: tongue = both walls = 10/3)
+ridge_h       = 4;         // ridge height (cut depth into the edge, Y)
+ridge_inset   = 10/3;      // outer wall = tongue = inner wall = 10/3 (centered, all equal)
 ridge_setback = 20;        // from the front edge (x=0) to the start of the ridge
 rabbet_clear  = 0.4;       // fit clearance
+
+// Top-edge M3 heat-set insert holes (receive the top panel's socket-cap screws).
+// Centered across the thickness; aligned with Console10_top.scad's screw row.
+m3_insert_dia    = 4.0;    // heat-set brass insert hole dia (M3)
+n_top_screws     = 3;      // top-edge inserts per side
+top_screw_margin = 15;     // from each end of the top edge
+insert_depth     = 6;      // insert seat depth into solid cheek past the rabbet
+n_bot_screws     = 4;      // bottom-edge inserts per side
+bot_screw_margin = 20;     // from each end of the bottom edge
 
 // ---------- DERIVED ---------------------------------------------------------
 SQRT3 = sqrt(3);
@@ -100,11 +113,12 @@ i_lim = ceil((bottom_len + back_h) / spacing) + 3;
 j_lim = i_lim;
 
 // Point-in-silhouette test (right-trapezoid, slant on front-left).
+// Inset by iso_edge_fill so the outer ring of triangles is left solid (filled).
 function inside_silhouette(p) =
-    p[1] >= 0 &&
-    p[0] <= bottom_len &&
-    p[1] <= back_h &&
-    (slant_y * p[0] - slant_x * p[1]) >= 0;
+    p[1] >= iso_edge_fill &&
+    p[0] <= bottom_len - iso_edge_fill &&
+    p[1] <= back_h - iso_edge_fill &&
+    (slant_y * p[0] - slant_x * p[1]) >= iso_edge_fill;
 
 function tri_up_in(c, s) =
     let(h = s * SQRT3 / 2)
@@ -184,15 +198,39 @@ module top_rabbet() {
         cube([top_len, ridge_h + rabbet_clear + 1, ridge_w + rabbet_clear]);
 }
 
+// Top-edge insert holes — vertical (-y) holes at the thickness centerline, evenly
+// spaced along the top edge (aligned with the top panel's screw row). Pass through
+// the rabbet void and seat the heat-set insert in the solid cheek below it.
+function top_screw_xs() = [ for (i = [0:n_top_screws-1])
+    v_front_top[0] + top_screw_margin + i*(top_len - 2*top_screw_margin)/(n_top_screws-1) ];
+module top_insert_holes() {
+    for (sx = top_screw_xs())
+        translate([sx, back_h + 0.1, panel_t/2])
+            rotate([90, 0, 0])
+                cylinder(d = m3_insert_dia, h = (ridge_h + rabbet_clear) + insert_depth + 0.2, $fn = 24);
+}
+
+// Bottom-edge insert holes — vertical (+y) holes at the thickness centerline,
+// evenly spaced along the bottom edge (aligned with the bottom panel's screw
+// row). Pass up through the rabbet void into the solid cheek above it.
+function bot_insert_xs() = [ for (i = [0:n_bot_screws-1])
+    bot_screw_margin + i*(bottom_len - 2*bot_screw_margin)/(n_bot_screws-1) ];
+module bottom_insert_holes() {
+    for (sx = bot_insert_xs())
+        translate([sx, -0.1, panel_t/2])
+            rotate([-90, 0, 0])
+                cylinder(d = m3_insert_dia, h = (ridge_h + rabbet_clear) + insert_depth + 0.2, $fn = 24);
+}
+
 // ---------- ASSEMBLED CHEEK -------------------------------------------------
 module cheek() {
     difference() {
         // Solid extruded trapezoid
         linear_extrude(height = panel_t)
             cheek_silhouette();
-        // Isogrid pockets (or through-cuts) into the interior face (+Z)
+        // Isogrid pockets (or through-cuts) into the EXTERIOR face (Z=0)
         cut_depth = through_cut ? panel_t + 0.2 : pocket_d;
-        cut_z     = through_cut ? -0.1 : panel_t - pocket_d;
+        cut_z     = through_cut ? -0.1 : -0.01;
         translate([0, 0, cut_z])
             linear_extrude(height = cut_depth + 0.01)
                 isogrid_2d();
@@ -202,6 +240,9 @@ module cheek() {
         // v3.1: bottom + top edge rabbets receive the floor / top panel ridges
         bottom_rabbet();
         top_rabbet();
+        // v3.3: M3 heat-set insert holes in the top + bottom edges (panel screws)
+        top_insert_holes();
+        bottom_insert_holes();
     }
 }
 

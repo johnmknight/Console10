@@ -1,16 +1,23 @@
 # CONSOLE10 — DESIGN DOCUMENT
 
-**Version 3.1**
+**Version 3.3**
 **Date: 2026-05-28**
 
 ---
+
+## v3.3 changelog (vs v3.1)
+
+1. **Top front bevel** added (built cleanly via `hull()`) — the top's front edge rakes to the 30 deg slant.
+2. **M3 mounting screws**: socket-cap, **counterbored flush** — top **3/side**, bottom **4/side**, centered over each cheek — driving into **M3 heat-set inserts** in the cheek top + bottom edges.
+3. **Tongue & groove equalized**: tongue + both walls all equal at 10/3 (~3.33 mm), centered (was a 4 mm tongue offset to the inside, unequal walls).
+4. **Isogrid moved to the EXTERIOR face**, **5 mm deep** (was 1.8 mm on the interior), with the **outer ring filled solid** (`iso_edge_fill`, ~half a triangle spacing) so the deeper pockets clear the edge rabbets / inserts / rail holes.
 
 ## v3.1 changelog (vs v3.0)
 
 1. **All parts are now parametric OpenSCAD**: `Console10_top.scad`, `Console10_bottom.scad`, `Console10_front_insert.scad` (reverse-engineered from the NASA STL models), plus the existing cheek `Console10_isogrid.scad` and an assembly `Console10_module.scad`.
 2. **Symmetric ridge joinery**: the TOP now uses the SAME joinery as the bottom — a slab with two side ridges that seat into rabbets in the cheek **top** edge. The v3.0 top "wall + slot" scheme is dropped. The cheek now has a rabbet on **both** the top and bottom edges.
 3. **Front insert** now spans BETWEEN the cheeks (~232.6 mm), sitting on the floor at the front, with its 30° face flush with the slant (was modeled as a slant-length wedge).
-4. A 30° bevel on the top's front edge was tried and **reverted** — the top front stays square for now.
+4. A 30° bevel on the top's front edge was tried and reverted here (re-added cleanly in v3.3).
 
 ## v3.0 changelog (vs v2.5) — MAJOR ARCHITECTURE CHANGE
 
@@ -96,8 +103,9 @@ Hosts ~8 mm-deep edge-drilled 10-32 inserts with adequate wall material.
 
 ### 4.3 Isogrid (v2.5)
 
-- Tiling: {3, 6} triangular · Spacing: 20 mm · Rib: 2.5 mm · Pocket depth: 1.8 mm (or through-cut) · Fillet: 1.59 mm
-- Coverage: **whole-triangle filter** — a pocket is generated only when all three triangle vertices fall inside the silhouette; clipped perimeter triangles are left solid.
+- Tiling: {3, 6} triangular · Spacing: 20 mm · Rib: 2.5 mm · **Pocket depth: 5 mm** (or through-cut) · Fillet: 1.59 mm
+- **Face: EXTERIOR** (v3.3 — pockets are on the outside face; interior is flat)
+- Coverage: **whole-triangle filter** + **outer-ring fill** — a pocket is generated only when all three triangle vertices fall inside the silhouette inset by `iso_edge_fill` (~half a spacing). This fills the outer ring(s) solid so the 5 mm pockets clear the edge rabbets / inserts / rail holes.
 
 ### 4.4 Cheek edge features for panel joinery (v3.0 — pending SCAD update)
 
@@ -167,7 +175,7 @@ The v2.4–v2.5 trapezoidal dovetail castellation at the panel centerline is **s
 | Front insert | 237.3 long | 20.6 × 38 | ✓ |
 
 ### 9.3 Print orientation
-- **Cheek**: flat on bed, exterior face down, isogrid pockets up (no overhang).
+- **Cheek**: flat on bed, **interior face down** (the isogrid is now on the exterior, so its pockets face up — no overhang). M3 insert holes in the top/bottom edges; rail holes in the slant/back edges.
 - **Top / bottom**: flat on bed (rabbet/ridge features may need light support depending on orientation).
 - **Front insert**: orient wedge for minimal support.
 
@@ -239,3 +247,4 @@ The v2.4–v2.5 trapezoidal dovetail castellation at the panel centerline is **s
 - **v2.5** — isogrid pocket filter (whole-triangle, no clipped perimeter pockets)
 - **v3.0** — **major architecture change**: abandoned the split-half + centerline dovetail; top & bottom are now **single-piece** panels sized to the 10" mini-rack width (~253 mm), printable as one part on a 255 mm bed; joinery changed to **rabbet-based** (bottom side-ridges into cheek bottom rabbets; cheek tops into a top-panel rabbet); **front insert** added as a slant wedge template (merge into bottom or glue); top/bottom/front are now standalone STL models, cheek remains SCAD-driven; deprecated the `*_panel_half.scad` files and cheek tab-channels
 - **v3.1** — all parts re-authored as parametric OpenSCAD (top/bottom/front/cheek + module assembly); symmetric ridge joinery (top now matches the bottom: slab + side ridges into cheek top rabbets; cheek rabbeted on both edges); front insert spans between the cheeks; a top front-edge bevel was tried and reverted
+- **v3.3** — top front bevel re-added (hull-built); M3 counterbored socket-cap mounts (top 3/side, bottom 4/side) into heat-set inserts in the cheek edges; tongue/groove equalized to 10/3 (~3.33 mm) all-equal/centered; isogrid moved to the exterior face, 5 mm deep, outer ring filled (`iso_edge_fill`)
