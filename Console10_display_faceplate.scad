@@ -65,6 +65,29 @@ boss_d     = 8;           // boss outer diameter
 post_len   = 6;           // boss length behind the seat plane (thread engagement)
 anchor_off = 4;           // L-brace column sits this far outside the opening corner
 
+// ---------- HDMI switch — mounted vertical (long axis up the panel) to LEFT of LCD ----
+// Device body 11.02 W x 17.1 H x 75.2 D in the manufacturer's orientation. We
+// ROTATE it so the long axis runs VERTICAL up the panel: original D (75.2)
+// becomes the panel-face height, original H (17.1) becomes the depth behind
+// the panel, original W (11.02) stays as the panel-face width. Cutout in panel
+// face is 11.02 x 75.2. Rear sleeve is open both ends (no floor) so the device
+// slides in from the front (or back) and is clamped by 2 M2 set screws drilled
+// through opposite (L + R) side walls — a single X-axis cylinder makes both
+// holes in one shot. The "back of device" in the rotated frame = the TOP end
+// of the vertical sleeve; the M2 axis is 6.6 mm DOWN from there.
+hsw_w               = 11.02;     // panel-face width  (X)
+hsw_h               = 75.2;      // panel-face height (Y) — long axis vertical
+hsw_d               = 35;        // depth behind panel (Z) — sleeve extends this far back
+hsw_press_clr       = 0;         // per-side cutout clearance (negative => tighter)
+hsw_wall_t          = 2.5;       // sleeve wall thickness
+hsw_screw_d         = 2.4;       // M2 clearance hole diameter
+hsw_screw_from_back = 6.6;       // M2 axis distance below the TOP end of the sleeve
+hsw_gap             = 5;         // visual gap between LCD opening edge and HSW sleeve outer
+
+// Derived position: just left of the LCD opening, vertically centered
+hsw_cx = -(open_w/2 + hsw_gap + (hsw_w - 2*hsw_press_clr)/2 + hsw_wall_t);
+hsw_cy = plate_h/2;
+
 // ---------- slant-insert mount holes (perpendicular through the flat plate) ----
 // Two per side at the bezel SIDE margin (X=+/-121.5). Those columns are already
 // outboard of the LCD (face only +/-82.8 wide), so the bolts clear the screen in X
@@ -86,8 +109,10 @@ floor_t       = 6;        // bottom-panel slab thickness (for the fit-check plac
 $fn = 48;
 cx = 0; cy = plate_h/2;
 
-echo(str("DISPLAY FACEPLATE v0.15 (flat 3mm + merged rear rail, no slit) ", plate_w, " x ", plate_h, " (", n_u, "U) t", plate_t,
+echo(str("DISPLAY FACEPLATE v0.16 (+HDMI switch, left of LCD, vertical) ", plate_w, " x ", plate_h, " (", n_u, "U) t", plate_t,
          " | LCD ", lcd_w, "x", lcd_h, " depth ", lcd_depth, " glass flush @ z=", plate_t,
+         " | HSW ", hsw_w, "x", hsw_h, " sleeve d=", hsw_d, " @ x=", hsw_cx,
+         " M2 holes Φ", hsw_screw_d, " @ y=", hsw_cy + hsw_h/2 - hsw_screw_from_back,
          " | bosses 4 @ ", hole_dx, "x", hole_dy, " seat z=", mount_z, " (MEASURE hole pitch)"));
 
 // =============================================================================
@@ -145,6 +170,34 @@ module connecting_wall(dy) {
 }
 
 // =============================================================================
+// HDMI SWITCH REAR SLEEVE — open-ended rectangular tube on the panel back.
+// Holds the rotated (long-axis-vertical) HDMI switch behind the LCD-left panel
+// area. Two M2 clearance holes are drilled by a single X-axis cylinder through
+// both side walls, 6.6 mm down from the TOP end of the sleeve.
+// =============================================================================
+module hdmi_switch_sleeve() {
+    inner_w = hsw_w - 2*hsw_press_clr;
+    inner_h = hsw_h - 2*hsw_press_clr;
+    outer_w = inner_w + 2*hsw_wall_t;
+    outer_h = inner_h + 2*hsw_wall_t;
+    screw_y = hsw_cy + hsw_h/2 - hsw_screw_from_back;
+    screw_z = -hsw_d/2;
+
+    difference() {
+        // outer block: z = [-hsw_d, 0]
+        translate([hsw_cx - outer_w/2, hsw_cy - outer_h/2, -hsw_d])
+            cube([outer_w, outer_h, hsw_d]);
+        // inner cavity: open both ends (no floor)
+        translate([hsw_cx - inner_w/2, hsw_cy - inner_h/2, -hsw_d - 1])
+            cube([inner_w, inner_h, hsw_d + 2]);
+        // M2 holes — single X-axis cylinder through both side walls
+        translate([hsw_cx - outer_w/2 - 1, screw_y, screw_z])
+            rotate([0, 90, 0])
+                cylinder(d = hsw_screw_d, h = outer_w + 2);
+    }
+}
+
+// =============================================================================
 // PANEL — flat 3 mm slab, full-face LCD through-cut, slant mount holes, 4 corner
 // L-braces, and 2 boss-to-boss support walls. All adds are unioned first; all
 // cuts (including screw pilots through the bosses) happen at the outer
@@ -167,11 +220,18 @@ module panel() {
             for (dx = [-1, 1])
                 for (dy = [-1, 1])
                     corner_brace(dx, dy);
+
+            // --- HDMI switch rear sleeve (open both ends + M2 side-clamp holes) ---
+            hdmi_switch_sleeve();
         }
 
         // --- full-face LCD opening (flush) straight through the slab ---
         translate([cx, cy, plate_t/2])
             cube([open_w, open_h, plate_t + 2], center = true);
+
+        // --- HDMI switch panel-face cutout (press-fit, full through) ---
+        translate([hsw_cx, hsw_cy, plate_t/2])
+            cube([hsw_w - 2*hsw_press_clr, hsw_h - 2*hsw_press_clr, plate_t + 2], center = true);
 
         // --- slant-insert mount screws — 2 per side, straight through ---
         for (sx = [-cheek_ctr_x, cheek_ctr_x])
@@ -198,6 +258,11 @@ module lcd_mock() {
     color("RoyalBlue")
         translate([cx, cy, plate_t - 0.55])
             cube([lcd_w - 1, lcd_h - 1, 0.8], center = true);
+
+    // HDMI switch body (rotated vertical, behind panel)
+    color("SlateGray")
+        translate([hsw_cx, hsw_cy, -hsw_d/2])
+            cube([hsw_w, hsw_h, hsw_d], center = true);
 }
 
 // =============================================================================
