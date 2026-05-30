@@ -8,10 +8,11 @@
 // front insert = pale green.
 // =============================================================================
 
-use <Console10_isogrid.scad>      // cheek()
-use <Console10_bottom.scad>       // bottom_panel()
-use <Console10_top.scad>          // top_panel()
-use <Console10_front_insert.scad> // front_insert()
+use <Console10_isogrid.scad>           // cheek()
+use <Console10_bottom.scad>            // bottom_panel()
+use <Console10_top.scad>               // top_panel()
+use <Console10_front_insert.scad>      // front_insert()
+use <Console10_display_faceplate.scad> // faceplate_on_slant()
 
 // ---- key dimensions (kept equal to the part files) ----
 floor_w     = 253;          // bottom/top width (10" mini-rack)
@@ -28,7 +29,8 @@ cheek_base_z = floor_t;           // cheeks rest on the floor slab top
 top_z_nudge = 0;
 front_y_nudge = 0;     // slide the front insert front/back
 front_z_nudge = 0;     // raise/lower the front insert
-show_front = true;
+show_front = false;    // hidden this session — display faceplate occupies the front
+show_display = true;   // show the Elecrow display faceplate on the front slant
 span = floor_w - 2*cheek_t;            // interior width between cheeks (~233)
 front_height = 38;                     // front insert vertical leg
 front_depth  = front_height * tan(30); // 21.94  (30deg face)
@@ -61,3 +63,9 @@ if (show_front)
             mirror([0, 1, 0])
                 rotate([0, 0, 90])
                     front_insert();
+
+// Display faceplate — Elecrow RC070 7" panel, mounted FLAT on the front 30deg
+// slant (the plate tilts to the slant, the flush monitor goes with it). Bolts to
+// the cheek slant inserts; the faceplate file already places it in this frame.
+if (show_display)
+    color("Gainsboro") faceplate_on_slant();
