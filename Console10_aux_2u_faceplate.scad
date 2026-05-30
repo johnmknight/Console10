@@ -29,7 +29,7 @@ cf_h         = 65.9;
 cf_d         = 30;
 cf_press_clr = 0;
 cf_wall_t    = 2.5;
-cf_cx        = -79;
+cf_cx        = -99.25;     // shifted left so 3 holders + USB-C fit symmetrically
 cf_cy        = plate_h/2;
 
 // ---------- SD card holder (press-fit, closed-back sleeve, sits proud) ----
@@ -54,14 +54,25 @@ usbc_screw_y_pitch  = 30;
 usbc_body_clr       = 0.2;
 
 // ---------- horizontal layout ----------
+// Devices left-to-right: CF, holder1, holder2, holder3, USB-C. 3 holders
+// grouped consecutively; USB-C anchors the far right. Each device's outer
+// footprint separated from the next by panel_layout_gap. Layout symmetric
+// around X=0 (cf_cx chosen to balance).
 panel_layout_gap = 10;
-holder_cx = cf_cx + (cf_w - 2*cf_press_clr)/2 + cf_wall_t + panel_layout_gap
-                  + (holder_w - 2*holder_press_clr)/2 + holder_wall_t;
 holder_cy = plate_h/2;
 
-usbc_cx = holder_cx + (holder_w - 2*holder_press_clr)/2 + holder_wall_t
-                    + panel_layout_gap + usbc_flange_w/2;
-usbc_cy = plate_h/2;
+// Half-widths used in chain math
+_cf_half     = (cf_w - 2*cf_press_clr)/2 + cf_wall_t;            //  9.4
+_holder_half = (holder_w - 2*holder_press_clr)/2 + holder_wall_t; // 23.25
+
+holder1_cx = cf_cx + _cf_half + panel_layout_gap + _holder_half;
+holder2_cx = holder1_cx + 2*_holder_half + panel_layout_gap;
+holder3_cx = holder2_cx + 2*_holder_half + panel_layout_gap;
+usbc_cx    = holder3_cx + _holder_half + panel_layout_gap + usbc_flange_w/2;
+usbc_cy    = plate_h/2;
+
+// All holder X centers (loop over this in panel/mocks)
+holder_cxs = [holder1_cx, holder2_cx, holder3_cx];
 
 // ---------- slant-insert mount holes ----------
 // 2U plate: only U0-row cheek holes fit (50.80, 66.675, 82.55).
@@ -75,9 +86,9 @@ floor_t       = 6;
 
 $fn = 48;
 
-echo(str("AUX FACEPLATE v0.1 (2U: CF + holder + USB-C) ", plate_w, " x ", plate_h, " (", n_u, "U) t", plate_t,
+echo(str("AUX FACEPLATE v0.2 (2U: CF + 3 holders + USB-C) ", plate_w, " x ", plate_h, " (", n_u, "U) t", plate_t,
          " | CF @ x=", cf_cx,
-         " | HOLDER @ x=", holder_cx, " sleeve d=", holder_sleeve_d, " proud ", holder_proud,
+         " | HOLDERS @ x=", holder_cxs, " (sleeve d=", holder_sleeve_d, " proud ", holder_proud, ")",
          " | USB-C @ x=", usbc_cx, " (cutout ", usbc_body_w + 2*usbc_body_clr, "x", usbc_body_h + 2*usbc_body_clr,
          ", screws Φ", usbc_screw_d, " @ y±", usbc_screw_y_pitch/2, ")"));
 
@@ -98,8 +109,9 @@ module cf_support_sleeve() {
 
 // =============================================================================
 // HOLDER SUPPORT SLEEVE — closed back (floor is the bottom-out stop).
+// Takes a cx parameter so multiple holders can share the same module.
 // =============================================================================
-module holder_support_sleeve() {
+module holder_support_sleeve(cx) {
     inner_w   = holder_w - 2*holder_press_clr;
     inner_h   = holder_h - 2*holder_press_clr;
     outer_w   = inner_w + 2*holder_wall_t;
@@ -107,9 +119,9 @@ module holder_support_sleeve() {
     cavity_d  = holder_sleeve_d - holder_wall_t;
 
     difference() {
-        translate([holder_cx - outer_w/2, holder_cy - outer_h/2, -holder_sleeve_d])
+        translate([cx - outer_w/2, holder_cy - outer_h/2, -holder_sleeve_d])
             cube([outer_w, outer_h, holder_sleeve_d]);
-        translate([holder_cx - inner_w/2, holder_cy - inner_h/2, -cavity_d])
+        translate([cx - inner_w/2, holder_cy - inner_h/2, -cavity_d])
             cube([inner_w, inner_h, cavity_d + 1]);
     }
 }
@@ -126,9 +138,10 @@ module panel() {
             translate([cf_cx, cf_cy, plate_t/2])
                 cube([cf_w - 2*cf_press_clr, cf_h - 2*cf_press_clr, plate_t + 2], center = true);
 
-            // SD card holder press-fit cutout
-            translate([holder_cx, holder_cy, plate_t/2])
-                cube([holder_w - 2*holder_press_clr, holder_h - 2*holder_press_clr, plate_t + 2], center = true);
+            // 3 SD card holder press-fit cutouts
+            for (cx = holder_cxs)
+                translate([cx, holder_cy, plate_t/2])
+                    cube([holder_w - 2*holder_press_clr, holder_h - 2*holder_press_clr, plate_t + 2], center = true);
 
             // USB-C panel-mount: body cutout + 2 M3 screw holes
             translate([usbc_cx, usbc_cy, plate_t/2])
@@ -144,7 +157,7 @@ module panel() {
         }
 
         cf_support_sleeve();
-        holder_support_sleeve();
+        for (cx = holder_cxs) holder_support_sleeve(cx);
     }
 }
 
@@ -156,9 +169,10 @@ module device_mocks() {
         translate([cf_cx, cf_cy, -cf_d/2])
             cube([cf_w, cf_h, cf_d], center = true);
 
-    color("Goldenrod")
-        translate([holder_cx, holder_cy, plate_t + holder_proud - holder_d/2])
-            cube([holder_w, holder_h, holder_d], center = true);
+    for (cx = holder_cxs)
+        color("Goldenrod")
+            translate([cx, holder_cy, plate_t + holder_proud - holder_d/2])
+                cube([holder_w, holder_h, holder_d], center = true);
 
     color("Silver")
         difference() {
