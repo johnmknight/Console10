@@ -75,17 +75,23 @@ anchor_off = 4;           // L-brace column sits this far outside the opening co
 // through opposite (L + R) side walls — a single X-axis cylinder makes both
 // holes in one shot. The "back of device" in the rotated frame = the TOP end
 // of the vertical sleeve; the M2 axis is 6.6 mm DOWN from there.
-hsw_w               = 11.02;     // panel-face width  (X)
-hsw_h               = 75.2;      // panel-face height (Y) — long axis vertical
-hsw_d               = 35;        // depth behind panel (Z) — sleeve extends this far back
+hsw_w               = 17.2;      // panel-face width  (X)  (MEASURED)
+hsw_h               = 110.2;     // panel-face height (Y) — long axis vertical (MEASURED)
+hsw_d               = 11;        // depth behind panel (Z) — sleeve extends this far back
 hsw_press_clr       = 0;         // per-side cutout clearance (negative => tighter)
 hsw_wall_t          = 2.5;       // sleeve wall thickness
 hsw_screw_d         = 2.4;       // M2 clearance hole diameter
 hsw_screw_from_back = 6.6;       // M2 axis distance below the TOP end of the sleeve
 hsw_gap             = 5;         // visual gap between LCD opening edge and HSW sleeve outer
+hsw_end_wall_d      = 75.4;      // top + bottom end walls extend this far back (rest stays at hsw_d)
+hsw_u_lip           = 6;         // inward leg length on the top + bottom end walls (U-shape rail)
 
-// Derived position: just left of the LCD opening, vertically centered
-hsw_cx = -(open_w/2 + hsw_gap + (hsw_w - 2*hsw_press_clr)/2 + hsw_wall_t);
+// LCD shifted RIGHT so the (HSW + LCD) composition is centered on the panel:
+// composition center = X=0; LCD center offset = (HSW outer width + hsw_gap) / 2
+lcd_shift_for_composition = ((hsw_w - 2*hsw_press_clr + 2*hsw_wall_t) + hsw_gap) / 2;
+
+// Derived position: just left of the LCD opening, vertically centered.
+hsw_cx = lcd_shift_for_composition - (open_w/2 + hsw_gap + (hsw_w - 2*hsw_press_clr)/2 + hsw_wall_t);
 hsw_cy = plate_h/2;
 
 // ---------- slant-insert mount holes (perpendicular through the flat plate) ----
@@ -107,7 +113,10 @@ show_lcd      = true;     // include the mock LCD in the fit-check
 floor_t       = 6;        // bottom-panel slab thickness (for the fit-check placement)
 
 $fn = 48;
-cx = 0; cy = plate_h/2;
+// LCD center: shifted right so the (HSW slot + LCD opening) composition is
+// centered on X=0 rather than the LCD alone being on the center.
+cx = lcd_shift_for_composition;
+cy = plate_h/2;
 
 echo(str("DISPLAY FACEPLATE v0.16 (+HDMI switch, left of LCD, vertical) ", plate_w, " x ", plate_h, " (", n_u, "U) t", plate_t,
          " | LCD ", lcd_w, "x", lcd_h, " depth ", lcd_depth, " glass flush @ z=", plate_t,
@@ -184,13 +193,31 @@ module hdmi_switch_sleeve() {
     screw_z = -hsw_d/2;
 
     difference() {
-        // outer block: z = [-hsw_d, 0]
-        translate([hsw_cx - outer_w/2, hsw_cy - outer_h/2, -hsw_d])
-            cube([outer_w, outer_h, hsw_d]);
-        // inner cavity: open both ends (no floor)
-        translate([hsw_cx - inner_w/2, hsw_cy - inner_h/2, -hsw_d - 1])
-            cube([inner_w, inner_h, hsw_d + 2]);
-        // M2 holes — single X-axis cylinder through both side walls
+        union() {
+            // BOTTOM end wall — extends to full hsw_end_wall_d
+            translate([hsw_cx - outer_w/2, hsw_cy - outer_h/2, -hsw_end_wall_d])
+                cube([outer_w, hsw_wall_t, hsw_end_wall_d]);
+            // TOP end wall — extends to full hsw_end_wall_d
+            translate([hsw_cx - outer_w/2, hsw_cy + inner_h/2, -hsw_end_wall_d])
+                cube([outer_w, hsw_wall_t, hsw_end_wall_d]);
+            // LEFT side wall — short (hsw_d) only
+            translate([hsw_cx - outer_w/2, hsw_cy - inner_h/2, -hsw_d])
+                cube([hsw_wall_t, inner_h, hsw_d]);
+            // RIGHT side wall — short (hsw_d) only
+            translate([hsw_cx + inner_w/2, hsw_cy - inner_h/2, -hsw_d])
+                cube([hsw_wall_t, inner_h, hsw_d]);
+            // TOP U-rail lips — 2 legs hanging DOWN from the top wall edges
+            translate([hsw_cx - outer_w/2, hsw_cy + inner_h/2 - hsw_u_lip, -hsw_end_wall_d])
+                cube([hsw_wall_t, hsw_u_lip, hsw_end_wall_d]);
+            translate([hsw_cx + outer_w/2 - hsw_wall_t, hsw_cy + inner_h/2 - hsw_u_lip, -hsw_end_wall_d])
+                cube([hsw_wall_t, hsw_u_lip, hsw_end_wall_d]);
+            // BOTTOM U-rail lips — 2 legs standing UP from the bottom wall edges
+            translate([hsw_cx - outer_w/2, hsw_cy - inner_h/2, -hsw_end_wall_d])
+                cube([hsw_wall_t, hsw_u_lip, hsw_end_wall_d]);
+            translate([hsw_cx + outer_w/2 - hsw_wall_t, hsw_cy - inner_h/2, -hsw_end_wall_d])
+                cube([hsw_wall_t, hsw_u_lip, hsw_end_wall_d]);
+        }
+        // M2 holes — single X-axis cylinder through both L+R side walls
         translate([hsw_cx - outer_w/2 - 1, screw_y, screw_z])
             rotate([0, 90, 0])
                 cylinder(d = hsw_screw_d, h = outer_w + 2);
