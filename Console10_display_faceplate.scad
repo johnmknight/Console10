@@ -25,8 +25,9 @@
 //
 //   MEASURED (John's calipers, 2026-05-30): LCD face 165.64 W x 102 H; front glass
 //     to the top of the rear mounting posts = 12.4 mm.
-//   STILL TO MEASURE: the corner screw-hole pitch (center-to-center). Flagged
-//     "<-- MEASURE"; until then the bosses are placed from a corner-inset estimate.
+//   MEASURED (2026-05-31, calipers): corner screw-hole pitch = 153.6 W x 91.5 H
+//     (center-to-center). hole_dx/hole_dy are independent constants below, NOT
+//     derived from the glass face — see the note there.
 // =============================================================================
 
 // ---------- module geometry the plate must mate to ----------
@@ -57,9 +58,12 @@ open_h  = lcd_h + 2*lcd_clr;
 mount_z = plate_t - lcd_depth; // -9.4: rear-post seat plane, BEHIND the panel
 
 // ---------- corner mounting bosses (RC070: 4 corner screws) ----------
-hole_inset = 4;           // screw center inset from the LCD face corner  <-- MEASURE
-hole_dx    = lcd_w - 2*hole_inset;   // corner-screw X pitch (until measured)
-hole_dy    = lcd_h - 2*hole_inset;   // corner-screw Y pitch (until measured)
+// Mounting-hole pitch is the BOARD's own spec — do NOT derive it from the glass
+// face size (lcd_w/lcd_h). Independent measured constants so a bezel/face change
+// can never drag the holes again. (Side inset 6.02 mm, top/bottom 5.25 mm — the
+// insets differ per axis, which is why one shared hole_inset couldn't fit both.)
+hole_dx    = 153.6;       // horizontal post-to-post, center-to-center  (MEASURED 2026-05-31, calipers)
+hole_dy    = 91.5;        // vertical   post-to-post, center-to-center  (MEASURED 2026-05-31, calipers)
 m3_tap     = 2.5;         // boss pilot for an M3 self-tapper / heat-set core
 boss_d     = 8;           // boss outer diameter
 post_len   = 6;           // boss length behind the seat plane (thread engagement)
@@ -84,6 +88,7 @@ hsw_screw_d         = 2.4;       // M2 clearance hole diameter
 hsw_screw_from_back = 6.6;       // M2 axis distance below the TOP end of the sleeve
 hsw_gap             = 5;         // visual gap between LCD opening edge and HSW sleeve outer
 hsw_end_wall_d      = 75.4;      // top + bottom end walls extend this far back (rest stays at hsw_d)
+hsw_end_wall_t      = 2 * hsw_wall_t;  // top + bottom end-wall THICKNESS (y) — 2x hsw_wall_t for strength (grows outward, away from the device cavity)
 hsw_u_lip           = 6;         // inward leg length on the top + bottom end walls (U-shape rail)
 
 // LCD shifted RIGHT so the (HSW + LCD) composition is centered on the panel:
@@ -122,7 +127,7 @@ echo(str("DISPLAY FACEPLATE v0.16 (+HDMI switch, left of LCD, vertical) ", plate
          " | LCD ", lcd_w, "x", lcd_h, " depth ", lcd_depth, " glass flush @ z=", plate_t,
          " | HSW ", hsw_w, "x", hsw_h, " sleeve d=", hsw_d, " @ x=", hsw_cx,
          " M2 holes Φ", hsw_screw_d, " @ y=", hsw_cy + hsw_h/2 - hsw_screw_from_back,
-         " | bosses 4 @ ", hole_dx, "x", hole_dy, " seat z=", mount_z, " (MEASURE hole pitch)"));
+         " | bosses 4 @ ", hole_dx, "x", hole_dy, " seat z=", mount_z));
 
 // =============================================================================
 // CORNER BRACE — horizontal arm only, from a corner-boss position out to the
@@ -194,12 +199,12 @@ module hdmi_switch_sleeve() {
 
     difference() {
         union() {
-            // BOTTOM end wall — extends to full hsw_end_wall_d
-            translate([hsw_cx - outer_w/2, hsw_cy - outer_h/2, -hsw_end_wall_d])
-                cube([outer_w, hsw_wall_t, hsw_end_wall_d]);
-            // TOP end wall — extends to full hsw_end_wall_d
+            // BOTTOM end wall — extends to full hsw_end_wall_d  (2x thick, grown outward)
+            translate([hsw_cx - outer_w/2, hsw_cy - inner_h/2 - hsw_end_wall_t, -hsw_end_wall_d])
+                cube([outer_w, hsw_end_wall_t, hsw_end_wall_d]);
+            // TOP end wall — extends to full hsw_end_wall_d  (2x thick, grown outward)
             translate([hsw_cx - outer_w/2, hsw_cy + inner_h/2, -hsw_end_wall_d])
-                cube([outer_w, hsw_wall_t, hsw_end_wall_d]);
+                cube([outer_w, hsw_end_wall_t, hsw_end_wall_d]);
             // LEFT side wall — short (hsw_d) only
             translate([hsw_cx - outer_w/2, hsw_cy - inner_h/2, -hsw_d])
                 cube([hsw_wall_t, inner_h, hsw_d]);
