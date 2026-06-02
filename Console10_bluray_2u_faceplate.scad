@@ -1,5 +1,5 @@
 // =============================================================================
-// CONSOLE10 — Aux Faceplate  v0.4  (2U: CF + Blu-ray + 3 SD + USB-C)
+// CONSOLE10 — Blu-ray Faceplate  v0.5  (2U TOP: CF + Blu-ray + 3 SD + USB-C)
 //
 // Regular 2U flat 3 mm faceplate that bolts to the cheek SLANT inserts.
 // Hosts: CF reader (left), a slot-load Blu-ray drive (center, with side rails
@@ -19,7 +19,7 @@ interior_half = panel_width/2 - cheek_thick;   // 116.5
 cheek_ctr_x   = interior_half + cheek_thick/2; // 121.5
 
 // ---------- flat plate ----------
-n_u      = 2;             // 2U faceplate
+n_u      = 2;             // 2U faceplate (top panel)
 plate_w  = 253;
 plate_h  = n_u * U;       // 88.9
 plate_t  = 3;
@@ -76,8 +76,9 @@ usbc_cy    = plate_h/2;
 holder_cxs = [holder1_cx, holder2_cx, holder3_cx];
 
 // ---------- slant-insert mount holes ----------
-// 2U plate: only U0-row cheek holes fit (50.80, 66.675, 82.55).
-// Wide pair = 50.80 + 82.55 → 31.75 mm vertical grip.
+// 2U plate spans s=0..88.9; only the U0 cheek-rail row fits: 50.80, 66.675, 82.55.
+// Use the wide pair (50.80, 82.55) = 31.75 mm vertical grip. (s=22.225 is inside
+// the front gap and has NO hole.)
 mount_y      = [50.80, 82.55];
 m10_32_clear = 5.5;
 
@@ -112,7 +113,7 @@ floor_t       = 6;
 
 $fn = 48;
 
-echo(str("AUX FACEPLATE v0.4 (2U: CF + Blu-ray + 3 SD + USB-C) ", plate_w, " x ", plate_h, " (", n_u, "U) t", plate_t,
+echo(str("BLU-RAY FACEPLATE v0.5 (2U TOP: CF + Blu-ray + 3 SD + USB-C) ", plate_w, " x ", plate_h, " (", n_u, "U) t", plate_t,
          " | CF @ x=", cf_cx,
          " | 3 SD @ y=", holder_cy, " x=", holder_cxs,
          " | USB-C @ x=", usbc_cx, " (cutout ", usbc_body_w + 2*usbc_body_clr, "x", usbc_body_h + 2*usbc_body_clr,
