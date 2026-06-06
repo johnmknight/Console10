@@ -13,6 +13,7 @@ use <Console10_bottom.scad>            // bottom_panel()
 use <Console10_top.scad>               // top_panel()
 use <Console10_front_insert.scad>      // front_insert()
 use <Console10_display_faceplate.scad> // faceplate_on_slant()
+use <Console10_slant_cap.scad>         // slant_cap_on_slant()
 
 // ---- key dimensions (kept equal to the part files) ----
 floor_w     = 253;          // bottom/top width (10" mini-rack)
@@ -31,6 +32,12 @@ front_y_nudge = 0;     // slide the front insert front/back
 front_z_nudge = 0;     // raise/lower the front insert
 show_front = false;    // hidden this session — display faceplate occupies the front
 show_display = true;   // show the Elecrow display faceplate on the front slant
+
+slant_angle    = 30;        // front slant, degrees from vertical (matches the parts)
+// Mount the panel at the HIGHEST cheek slant insert: the faceplate's top screw
+// (plate-local 127.00) lands on the topmost cheek hole
+// s = front_gap + (front_n_u-1)*U + top_EIA = 44.45 + 3*44.45 + 38.10 = 215.90.
+panel_slant_up = (44.45 + 3*44.45 + 38.10) - 127.00;   // = 88.90 mm (2U up); lower screw -> 139.70
 span = floor_w - 2*cheek_t;            // interior width between cheeks (~233)
 front_height = 38;                     // front insert vertical leg
 front_depth  = front_height * tan(30); // 21.94  (30deg face)
@@ -68,4 +75,10 @@ if (show_front)
 // slant (the plate tilts to the slant, the flush monitor goes with it). Bolts to
 // the cheek slant inserts; the faceplate file already places it in this frame.
 if (show_display)
-    color("Gainsboro") faceplate_on_slant();
+    color("Gainsboro")
+        translate([0, sin(slant_angle) * panel_slant_up, cos(slant_angle) * panel_slant_up])
+            faceplate_on_slant();
+
+// Slant gap cap — glue-on filler closing the slant between the top panel and the
+// top of the display panel (laps 3 mm over the panel).
+color("Plum") slant_cap_on_slant();
