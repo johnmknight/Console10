@@ -14,7 +14,12 @@ FLOOR  = 23.6;    // recessed tray floor surface (slot tops) — fill slots flus
 // ---- slot fill: solidify the WHOLE tray floor (covers slots + their sub-recess
 //      frame; reaches the recess walls so there's no seam) ----
 FILL_W = 36; FILL_L = 36; FILL_R = 3;
-FILL_Z0 = 18;                            // start in the solid body (below the slots)
+FILL_Z0 = 2;                             // SD slots run from the floor down INTO the base region, so
+                                         // fill to Z=2 to cover their FULL depth. Verified the base
+                                         // underside (flat base + 4 corner holes + lip) is identical
+                                         // at FILL_Z0 2 vs 4.75, so this doesn't touch the base.
+                                         // (Was 18 -> only the slot tops were filled, leaving the
+                                         // lower SD slots as vestigial voids in the interior.)
 
 // ---- bit grid (validated: 4mm hex bit, 0.20 mm/side) ----
 NX     = 4;       // holes ACROSS X
@@ -54,18 +59,25 @@ module bit_grid()
     translate([(ix-(NX-1)/2)*PITCH, (iy-(NY-1)/2)*PITCH, FLOOR-HOLE_DP])
       rotate([0,0,30]) cylinder(d=HEX_D, h=HOLE_DP+0.5, $fn=6);
 
-union() {
-  difference() {
-    union() {
-      import(STL, convexity=8);   // Gridfinity base + body + recessed tray
-      slot_fill();                // fill the SD slots flush to the tray floor
+module bit_holder() {
+  union() {
+    difference() {
+      union() {
+        import(STL, convexity=8);   // Gridfinity base + body + recessed tray
+        slot_fill();                // fill the SD slots flush to the tray floor
+      }
+      bit_grid();                   // drill the hex pockets into the floor
     }
-    bit_grid();                   // drill the hex pockets into the floor
-  }
-  intersection() {                // handles, trimmed to the bin footprint
-    union() {
-      for (sx=[-1,1]) translate([sx*X_OFF,0,TOP]) rotate([0,0,90]) u_handle(SPAN,RISE,STOCK,DROP,BEND,THICK);
+    intersection() {                // handles, trimmed to the bin footprint
+      union() {
+        for (sx=[-1,1]) translate([sx*X_OFF,0,TOP]) rotate([0,0,90]) u_handle(SPAN,RISE,STOCK,DROP,BEND,THICK);
+      }
+      translate([0,0,-1]) footprint_prism(TOP+RISE+5);
     }
-    translate([0,0,-1]) footprint_prism(TOP+RISE+5);
   }
 }
+
+// SECTION=1 (via -D) renders a cut-away for diagnostics; default draws the full part.
+SECTION = false;
+if (SECTION) difference() { bit_holder(); translate([0,0,-5]) cube([60,60,60]); }
+else bit_holder();
