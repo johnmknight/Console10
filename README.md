@@ -2,7 +2,7 @@
 
 Modular desktop **10" mini-rack housing system**, styled after NASA Mission Operations Control Room consoles. Each module is a self-contained 3D-printed enclosure that houses small-form-factor 10" mini-rack equipment (Pi mounts, small routers, Stream Decks, mini displays).
 
-See `designdoc.md` (**v3.0**) for the full specification.
+See `designdoc.md` (**v3.3**) for the full specification, including the accessory faceplates (§15–17).
 
 ## Architecture (v3.0)
 
@@ -13,6 +13,29 @@ The v2.4–v2.5 split-half + centerline-dovetail panel scheme is **abandoned**. 
 - **Bottom** → raised side ridges seat into **rabbets in the cheek bottom edges**.
 - **Top** → a rabbet receives each **cheek's top edge**.
 - Secured with glue or fasteners (TBD).
+
+## Cabinet vs. accessories
+
+**"Console10" = the cabinet only**: 2 cheeks + top + bottom (+ front insert). Everything
+that mounts to it — display faceplates, the MacroPad panel, the screen/slider panel, blank
+fillers, the Gridfinity drawer — is a **swappable accessory faceplate** that bolts to the
+cheek **slant inserts** (front) or **back-edge inserts**. Panels are sized to the rack U
+grid and the ~253 mm width. `Console10_module.scad` is the fit-check assembly that places
+the cabinet + a chosen accessory on the slant.
+
+### Accessory faceplates (current)
+
+| File | Accessory | Mount | Status |
+|------|-----------|-------|--------|
+| `Console10_display_faceplate.scad` | 7" monitor faceplate (Elecrow RC070 / GeeekPi) | 3U slant | v0.17 |
+| `Console10_lower_blank_faceplate.scad` | Blank filler beneath the display | 2U slant | v0.1 |
+| `Console10_macropad_pair_faceplate.scad` | 2× MacroPad + 0.91" OLED + 6 switch guards | 3U slant | v0.5 |
+| `Console10_screen_slider_panel.scad` | 4" HyperPixel sq + NeoSlider fader + OLED + 3 toggle guards | 3U | v0.1 |
+| `Console10_dsky_panel.scad` | DSKY-style: HyperPixel + MacroPad + slider + OLED | 3U | v0.1 |
+| `Console10_drawer.scad` | Gridfinity slide-out drawer | 2U | WIP v0.1 |
+
+Plus assorted blanks / holders (`Console10_aux_2u_faceplate`, `..._bluray_2u_faceplate`,
+`..._lcd_simple_faceplate`, `..._sd_holder_handled`, `..._bit_holder_handled`, etc.).
 
 ## Repository layout / file status
 
@@ -28,7 +51,7 @@ The v2.4–v2.5 split-half + centerline-dovetail panel scheme is **abandoned**. 
 | `Console10_isogrid-do-not-delete.stl` | Old 6 mm cheek | superseded |
 | `Console10_top_panel_half.scad` | Split-half top | ✗ DEPRECATED |
 | `Console10_bottom_panel_half.scad` | Split-half bottom | ✗ DEPRECATED |
-| `Console10_module.scad` | Full assembly (import cheek + 3 STLs) | ⏳ pending |
+| `Console10_module.scad` | Full fit-check assembly (cabinet + accessory faceplates) | ✓ built |
 | `preview/` | Rendered previews | — |
 
 ## Standards (locked)
