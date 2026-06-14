@@ -45,11 +45,16 @@ m10_32_clear = 5.5;
 
 // ---------- MacroPad RP2040 (STL-measured envelope + fab-print PCB) ----------
 mp_w       = 60.75;  mp_h = 105.25;            // board envelope (STL)
-mp_face_w  = 56;     mp_face_h = 100;          // exposed face opening (keys/enc/OLED; NO USB cut)
 mp_board_w = 59.69;  mp_board_h = 104.14;      // PCB (fab print)
 mp_pkt_clr = 0.3;
 mp_pocket_w = mp_board_w + 2*mp_pkt_clr;       // 60.29
 mp_pocket_h = mp_board_h + 2*mp_pkt_clr;       // 104.74
+// Face opening = the pocket (PCB) edge on BOTH axes -> NO front lip at all. The
+// old lip (56 x 100) overhung the outer key columns on the long sides AND the
+// OLED/encoder on the ends, blocking keycaps and the displays. Cut flush to the
+// PCB edge all round; retention is via the rear mount board (PCB screws to it).
+mp_face_w  = mp_pocket_w;                       // 60.29  (long-side lip removed)
+mp_face_h  = mp_pocket_h;                       // 104.74 (end lip removed -> clears the OLED)
 mp_collar_wall = 2.5;
 mp_lower    = 5;                               // recess the keypad this far behind the panel back
 mp_collar_h = 6 + mp_lower;                    // 11 — pocket wall depth
@@ -230,8 +235,9 @@ module panel() {
             place_pad( mp_cx, -90) { mp_face_cut_local(); mp_pocket_cut_local(); }
             // merge the two face openings at the centre (the boards already butt at
             // x=0) so the pads read as ONE continuous touching unit, no panel bridge.
+            // Height = full opening width so no divider stub remains at the seam ends.
             translate([0, mp_cy, plate_t/2])
-                cube([2*(mp_cx - mp_face_h/2) + 12, mp_face_w - 8, plate_t + 2], center = true);
+                cube([2*(mp_cx - mp_face_h/2) + 12, mp_face_w, plate_t + 2], center = true);
             // USB-C side notches: open each pad's outer collar wall at the connector
             place_pad(-mp_cx,  90) mp_usb_notch_local();
             place_pad( mp_cx, -90) mp_usb_notch_local();
