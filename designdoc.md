@@ -329,6 +329,18 @@ fit check of standoff height vs PCB seat and the post screw engagement.
   (the 2U rear stack collided with the floor). Mount rows → 3U `[50.80, 127.00]`.
   Re-exported `Console10_macropad_pair_faceplate.stl`.
 
+**v0.5 changes (2026-06-14):**
+- **0.91" OLED status display + a row of 6 switch-guard mounts** added in the lower
+  skirt below the keys: 1 guard under the left MacroPad + 5 right-aligned (rightmost's
+  right side at the screen/MacroPad right edge); the OLED is centred BENEATH the first
+  (left) switch as its status readout. Panel carries only the 12 mm bushing holes +
+  square base recesses (shuttle guards printed separately, glued in); the OLED gets a
+  recessed pocket/window + 4 rear posts.
+- **MacroPad face openings squared** (rounded-rect → plain rectangle).
+- **Assembly:** `Console10_module.scad` now places the panel on the slant via
+  `macropad_pair_on_slant()` — top edge at the 6th–7th slant-hole midpoint (s = 133.35),
+  base at the front-bottom corner; `show_macropad` / `show_cheeks` toggles added.
+
 ## 17. Screen + Slider + OLED + guarded-toggle faceplate — v0.1 (2026-06-14)
 
 A 3U faceplate (`Console10_screen_slider_panel.scad`; `part = "panel" |

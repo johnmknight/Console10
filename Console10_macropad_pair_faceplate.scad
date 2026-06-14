@@ -85,6 +85,39 @@ mp_cx  = mp_board_h/2 + mp_gap/2;               // 52.07
 mp_cy  = plate_h - U;                           // 88.9 — pads pushed to the TOP (blank skirt below)
 // left pad: rot +90 (OLED -> far left); right pad: rot -90 (OLED -> far right)
 
+// =============================================================================
+// LOWER-SKIRT ACCESSORIES (v0.5): a ROW of switch guards across the TOP of the skirt
+// (1 under the LEFT MacroPad + 5 right-aligned), with a 0.91" OLED status display
+// CENTRED BENEATH the first (left) switch. The panel carries only the guard HOLES +
+// square RECESSES — the printed shuttle guards are glued in separately.
+// =============================================================================
+// 0.91" OLED 4440 (CAD dims) — recessed pocket so the glass sits ~0.5 mm behind the face
+oled_bw = 33.02;  oled_bh = 21.46;  oled_aw = 22.384;  oled_ah = 5.584;
+oled_hole_dx = 27.94;  oled_hole_dy = 16.51;
+oled_mod_w = 30.5;  oled_mod_h = 12;  oled_glass_off = 2.5;
+oled_lip = plate_t - oled_glass_off;          // 0.5 mm front window lip
+oled_pkt_clr = 0.4;  oled_post_h = 5;  oled_boss_pilot = 2.1;
+oled_le = -(mp_cx + mp_board_h/2);            // left MacroPad LEFT edge  (x = -104.14)
+oled_cx = oled_le + oled_bw/2;                // OLED left-aligned to that edge
+oled_cy = 16.5;                               // status display, centred BENEATH the first switch
+oled_hx = oled_hole_dx/2;  oled_hy = oled_hole_dy/2;
+
+// Switch guards (printed separately, GLUED in): panel gets only a 12 mm bushing
+// hole + a square base recess. 1 guard centred under the OLED, 5 right-aligned.
+tog_hole_d = 12.4;  tog_recess = 25.6;  tog_recess_d = 2;
+tog_cy = 42;                                  // switch row Y (top of skirt, just below the MacroPad collar)
+tog_left_cx = oled_cx;                        // first guard, over the OLED (under the left MacroPad)
+tog_right_x = (mp_cx + mp_board_h/2) - 12.5;  // 91.64: rightmost guard's RIGHT side at the screen (MacroPad) right edge
+tog_pitch5  = 30.4;                           // pitch of the right-aligned row of 5
+function tog5_x(i) = tog_right_x - (4 - i)*tog_pitch5;   // i = 0..4
+
+// guard panel feature: bushing hole (through) + square base recess (front face)
+module guard_cut(cx) {
+    translate([cx, tog_cy, -1]) cylinder(d = tog_hole_d, h = plate_t + 2);
+    translate([cx, tog_cy, plate_t - tog_recess_d/2 + 0.05])
+        cube([tog_recess, tog_recess, tog_recess_d + 0.1], center = true);
+}
+
 // ---------- backplate ----------
 mp_bp_t     = 4;
 mp_bp_z     = -mp_post_h;                       // plate top at the post ends (-15)
@@ -124,7 +157,7 @@ module mp_collar_local()
 
 module mp_face_cut_local()
     translate([0, 0, plate_t/2])
-        linear_extrude(plate_t + 2, center = true) rrect(mp_face_w, mp_face_h, 4);
+        linear_extrude(plate_t + 2, center = true) square([mp_face_w, mp_face_h], center = true);
 
 module mp_pocket_cut_local()
     translate([0, 0, -mp_collar_h/2])
@@ -243,6 +276,14 @@ module panel() {
             // USB-C side notches: open each pad's outer collar wall at the connector
             place_pad(-mp_cx,  90) mp_usb_notch_local();
             place_pad( mp_cx, -90) mp_usb_notch_local();
+            // OLED status display: active window through the front lip + module pocket
+            translate([oled_cx, oled_cy, plate_t - oled_lip/2])
+                cube([oled_aw, oled_ah, oled_lip + 0.1], center = true);
+            translate([oled_cx, oled_cy, (plate_t - oled_lip)/2 + 0.05])
+                cube([oled_mod_w + 2*oled_pkt_clr, oled_mod_h + 2*oled_pkt_clr, plate_t - oled_lip + 0.1], center = true);
+            // Switch-guard features (holes + square recesses): 1 under the OLED + 5 right-aligned
+            guard_cut(tog_left_cx);
+            for (i = [0:4]) guard_cut(tog5_x(i));
             // slant-insert mount screws
             for (sx = [-cheek_ctr_x, cheek_ctr_x])
                 for (y = mount_y)
@@ -251,6 +292,9 @@ module panel() {
         // backplate mounting posts (added after the cuts so the pockets don't eat them)
         place_pad(-mp_cx,  90) mp_posts_local();
         place_pad( mp_cx, -90) mp_posts_local();
+        // OLED rear mounting posts (the OLED screws on from behind)
+        for (sx = [-1,1]) for (sy = [-1,1])
+            post(oled_cx + sx*oled_hx, oled_cy + sy*oled_hy, oled_post_h, 6, oled_boss_pilot);
     }
 }
 
@@ -260,6 +304,24 @@ module panel() {
 module devices() {
     color("Chocolate") place_pad(-mp_cx,  90) mp_mock_local();
     color("Peru")      place_pad( mp_cx, -90) mp_mock_local();
+    // OLED status display (mock; mounted separately, not printed with the panel)
+    color("DimGray") translate([oled_cx, oled_cy, -0.8]) cube([oled_bw, oled_bh, 1.6], center = true);
+    color("Cyan")    translate([oled_cx, oled_cy, plate_t - oled_lip - 0.05]) cube([oled_aw, oled_ah, 0.3], center = true);
+}
+
+// =============================================================================
+// ON-SLANT placement for the module fit-check assembly. slant_up = how far up the
+// 30 deg front slant the panel BASE (local Y=0) sits (mm along the slant); the
+// panel TOP is at slant_up + plate_h. Matches the lower-blank slant transform.
+// =============================================================================
+floor_t = 6;     // bottom-panel slab thickness (assembly reference)
+module macropad_pair_on_slant(slant_up = 0) {
+    translate([0, sin(slant_angle)*slant_up, floor_t + cos(slant_angle)*slant_up])
+        rotate([90 - slant_angle, 0, 0]) {
+            color("Gainsboro") panel();
+            if (show_devices)  devices();
+            if (show_backplate) color("Tan") macropad_mount_board();
+        }
 }
 
 // =============================================================================

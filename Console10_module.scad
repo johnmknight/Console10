@@ -14,6 +14,7 @@ use <Console10_top.scad>               // top_panel()
 use <Console10_front_insert.scad>      // front_insert()
 use <Console10_display_faceplate.scad> // faceplate_on_slant()
 use <Console10_lower_blank_faceplate.scad> // lower_blank_faceplate_on_slant()
+use <Console10_macropad_pair_faceplate.scad> // macropad_pair_on_slant()
 use <Console10_slant_cap.scad>         // slant_cap_on_slant()
 
 // ---- key dimensions (kept equal to the part files) ----
@@ -32,8 +33,10 @@ top_z_nudge = 0;
 front_y_nudge = 0;     // slide the front insert front/back
 front_z_nudge = 0;     // raise/lower the front insert
 show_front = false;    // hidden this session — display faceplate occupies the front
-show_display = true;   // show the Elecrow display faceplate on the front slant
-show_lower_blank = true; // show the 2U blank filler beneath the display
+show_display = false;  // Elecrow faceplate hidden (photo uses a GeeekPi monitor, different size/position)
+show_lower_blank = false; // 2U blank filler beneath the display (off: MacroPad occupies it)
+show_macropad   = true;  // twin-MacroPad panel, TOP at the 6th-7th slant-hole midpoint (s=133.35)
+show_cheeks     = true;  // off -> clean slant profile (no near cheek blocking the side view)
 
 slant_angle    = 30;        // front slant, degrees from vertical (matches the parts)
 // Mount the panel at the HIGHEST cheek slant insert: the faceplate's top screw
@@ -48,8 +51,10 @@ front_depth  = front_height * tan(30); // 21.94  (30deg face)
 module cheek_stand() { rotate([0,0,90]) rotate([90,0,0]) cheek(); }
 
 // Cheeks (right is mirrored). Exterior faces flush with the floor side edges.
+if (show_cheeks) {
 color("LightSteelBlue") translate([-hw, 0, cheek_base_z]) cheek_stand();
 color("LightSteelBlue") translate([ hw, 0, cheek_base_z]) mirror([1,0,0]) cheek_stand();
+}
 
 // Bottom floor (already centered on X, front edge at Y=0).
 color("Khaki") bottom_panel();
@@ -86,6 +91,12 @@ if (show_display)
 // flush under the display's bottom edge — no up-slant shift needed.
 if (show_lower_blank)
     color("Silver") lower_blank_faceplate_on_slant();
+
+// Twin-MacroPad panel — TOP edge placed halfway between the 6th (127.00) and 7th
+// (139.70) cheek slant holes => s = 133.35. As a 3U panel its base lands at s = 0
+// (front-bottom corner); mount holes (50.80, 127.00) hit the 1st & 6th cheek holes.
+if (show_macropad)
+    macropad_pair_on_slant(0);   // base at slant s=0 -> top at s=133.35
 
 // Slant gap cap — glue-on filler closing the slant between the top panel and the
 // top of the display panel (laps 3 mm over the panel).
