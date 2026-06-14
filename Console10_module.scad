@@ -13,6 +13,7 @@ use <Console10_bottom.scad>            // bottom_panel()
 use <Console10_top.scad>               // top_panel()
 use <Console10_front_insert.scad>      // front_insert()
 use <Console10_display_faceplate.scad> // faceplate_on_slant()
+use <Console10_lower_blank_faceplate.scad> // lower_blank_faceplate_on_slant()
 use <Console10_slant_cap.scad>         // slant_cap_on_slant()
 
 // ---- key dimensions (kept equal to the part files) ----
@@ -32,6 +33,7 @@ front_y_nudge = 0;     // slide the front insert front/back
 front_z_nudge = 0;     // raise/lower the front insert
 show_front = false;    // hidden this session — display faceplate occupies the front
 show_display = true;   // show the Elecrow display faceplate on the front slant
+show_lower_blank = true; // show the 2U blank filler beneath the display
 
 slant_angle    = 30;        // front slant, degrees from vertical (matches the parts)
 // Mount the panel at the HIGHEST cheek slant insert: the faceplate's top screw
@@ -78,6 +80,12 @@ if (show_display)
     color("Gainsboro")
         translate([0, sin(slant_angle) * panel_slant_up, cos(slant_angle) * panel_slant_up])
             faceplate_on_slant();
+
+// Lower blank filler — closes the 2U of slant BENEATH the display. It mounts at
+// the slant base (s=0..88.9), so its own *_on_slant placement already lands it
+// flush under the display's bottom edge — no up-slant shift needed.
+if (show_lower_blank)
+    color("Silver") lower_blank_faceplate_on_slant();
 
 // Slant gap cap — glue-on filler closing the slant between the top panel and the
 // top of the display panel (laps 3 mm over the panel).
