@@ -272,7 +272,7 @@ files in `preview/`. Nothing else in the repo was changed.
 
 ---
 
-## 16. Twin-MacroPad lower faceplate — v0.2 (2026-06-13)
+## 16. Twin-MacroPad lower faceplate — v0.3 (2026-06-13)
 
 A plain 2U faceplate (`Console10_macropad_pair_faceplate.scad`; `part =
 "panel" | "mount_board" | "macropad_backplate"`) carrying **two Adafruit 5128
@@ -283,7 +283,13 @@ the front.
 
 **Two bolt circles per pad (this is the key geometry).** The MacroPad's own PCB
 holes and the panel's backplate posts are **deliberately not concentric**:
-- **PCB mounting holes** — `mp_hx,mp_hy` = 52.07 × 81.28 mm (±26.04 × ±40.64).
+- **PCB mounting holes** — pitch `mp_hx,mp_hy` = 52.07 × 81.28 mm (±26.04 × ±40.64),
+  **but the 4-hole pattern is NOT centred on the board.** Measured from the 5128
+  assembly STL (cross-sectioned + overlaid in OpenSCAD — *measure from the model,
+  not photos*), it sits **`mp_hy_off` = +7.65 mm toward the OLED/encoder (+Y) end**.
+  Holes are at (±26.04, ±40.64 **+ 7.65**). The earlier v0.2 board placed the
+  standoffs centred, so they missed every hole by ~7.6 mm and the two pads could
+  not be mounted back-to-back — this is the v0.3 fix.
 - **Panel posts** — `mp_post_sx,mp_post_sy` = ±38 × ±44, pushed *outboard* of the
   pocket/collar wall (which reaches 32.65) so a backplate can bolt to the panel
   clear of the board. A Ø7 post can't sit on the PCB-hole axis without fouling the
@@ -291,21 +297,25 @@ holes and the panel's backplate posts are **deliberately not concentric**:
   (Seen edge-on this reads as "posts offset from the MacroPad holes" — it's by
   design, not a bug.)
 
-**Mounting board — v0.2 (NEW, replaces the two loose per-pad backplates).**
-`macropad_mount_board()` is **one** printed plate spanning both pads (~204 × 86 ×
+**Mounting board — v0.3 (NEW, replaces the two loose per-pad backplates).**
+`macropad_mount_board()` is **one** printed plate spanning both pads (~213 × 88 ×
 4 mm) that **bridges** the two bolt circles:
 - 8 × Ø3.4 flush holes on the post circle → bolts **down** onto all 8 panel posts.
-- 8 × Ø7 standoffs (8.4 mm tall, Ø3.4 thru) on the PCB circle → screw **up** into
-  the two PCBs (board bottom at z = −19, top on the post tips at z = −15,
-  standoffs reach the PCB back at z = −6.6).
+- 8 × Ø7 standoffs (8.4 mm tall, Ø3.4 thru) on the **offset** PCB circle → screw
+  **up** into the two PCBs (board bottom at z = −19, top on the post tips at
+  z = −15, standoffs reach the PCB back at z = −6.6). The standoffs carry the
+  `+mp_hy_off` shift, so the OLED-end pair lands ~3.8 mm from the board end →
+  plate widened to ±106.4 mm to support them.
+- Validated by overlaying the standoff centres on the STL PCB cross-section:
+  residual < 0.1 mm at all 4 holes.
 - Single welded solid, `Simple: yes`. Print flat-side down / standoffs up, no
-  supports. Plate ends ~2 mm inboard of each OLED/USB-C end so the ports stay
-  clear. Exported STL: `Console10_macropad_pair_backplate.stl`.
-- The older per-pad `macropad_backplate()` is kept in-file for reference only.
+  supports. Exported STL: `Console10_macropad_pair_backplate.stl`.
+- The older per-pad `macropad_backplate()` is kept in-file for reference only
+  (note: it still uses the *centred* hole assumption and is superseded).
 
-**Possible next steps (not open design questions):** USB-C end relief, a central
-lightening cutout, and/or a keyed corner on the mount board; first-article fit
-check of standoff height vs PCB seat and the post screw engagement.
+**Possible next steps (not open design questions):** USB-C end relief at the
+widened ends, a central lightening cutout, and/or a keyed corner; first-article
+fit check of standoff height vs PCB seat and the post screw engagement.
 
 ## 14. Revision history
 

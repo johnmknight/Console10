@@ -57,8 +57,12 @@ mp_stl      = "C:/Users/john_/Downloads/5128 MacroPad RP2040-Assembly.stl";
 mp_pcb_top_stl = 3;
 mp_z_off    = -mp_pcb_top_stl - mp_lower;      // -8: STL z -> model z (PCB top at z = -mp_lower)
 
-// MacroPad PCB mounting holes (the MP screws onto the backplate here)
-mp_hx = 52.07/2;  mp_hy = 81.28/2;             // 26.035 x 40.64 (2.05" x 3.20")
+// MacroPad PCB mounting holes (the MP screws onto the backplate here).
+// PITCH is 52.07 x 81.28 (2.05" x 3.20"), BUT the 4-hole pattern is NOT centred
+// on the board -- measured from the 5128 assembly STL it sits 7.65 mm toward the
+// OLED/encoder (+Y) end. So holes are at (+/-mp_hx, +/-mp_hy + mp_hy_off).
+mp_hx = 52.07/2;  mp_hy = 81.28/2;             // 26.035 x 40.64  (half-pitch)
+mp_hy_off = 7.65;                              // pattern offset toward +Y (OLED end)
 
 // Backplate post pattern (LOCAL MacroPad frame). Across = ±sx (just outside the
 // long-side collar wall, which reaches 32.65); along = ±sy (inboard of the board
@@ -177,23 +181,22 @@ module macropad_backplate() {
 // =============================================================================
 mb_t      = 4;                  // board thickness
 mb_z      = -mp_post_h;         // board top sits on the post tips (z = -15)
-mb_margin = 6;                  // outline margin around the post pattern
-// world half-extents of the post pattern (outer posts at x=±96.07, y=6.45/82.45)
-mb_post_wx = mp_cx + mp_post_sy;            // 96.07
-mb_half_w  = mb_post_wx + mb_margin;        // 102.07
-mb_half_h  = mp_post_sx + mb_margin;        // 44  (posts at cy ± mp_post_sx)
+mb_margin = 6;                  // outline margin around the feature pattern
+// the OLED-end standoffs sit furthest out: x = mp_cx + mp_hy + mp_hy_off
+mb_half_w  = mp_cx + mp_hy + mp_hy_off + mb_margin;   // ~106.4
+mb_half_h  = mp_post_sx + mb_margin;                  // 44  (posts at cy ± mp_post_sx)
 
-// per-pad features, LOCAL MacroPad frame -------------------------------------
+// per-pad features, LOCAL MacroPad frame. MP holes carry the +mp_hy_off shift ---
 module mb_standoffs_local(so_h)
     for (sx=[-1,1]) for (sy=[-1,1])              // sink 1mm into the plate so it fuses
-        translate([sx*mp_hx, sy*mp_hy, mb_z - 1]) cylinder(d = 7, h = so_h + 1);
+        translate([sx*mp_hx, sy*mp_hy + mp_hy_off, mb_z - 1]) cylinder(d = 7, h = so_h + 1);
 
 module mb_holes_local(so_h) {
     for (sx=[-1,1]) for (sy=[-1,1])              // panel-post screw clearance
         translate([sx*mp_post_sx, sy*mp_post_sy, mb_z - mb_t - 0.1])
             cylinder(d = 3.4, h = mb_t + 0.2);
     for (sx=[-1,1]) for (sy=[-1,1])              // MP screw clearance (back -> PCB)
-        translate([sx*mp_hx, sy*mp_hy, mb_z - mb_t - 0.1])
+        translate([sx*mp_hx, sy*mp_hy + mp_hy_off, mb_z - mb_t - 0.1])
             cylinder(d = 3.4, h = so_h + mb_t + 0.2);
 }
 
