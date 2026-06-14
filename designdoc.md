@@ -237,6 +237,76 @@ The v2.4–v2.5 trapezoidal dovetail castellation at the panel centerline is **s
 
 ---
 
+## 15. Slide-out Gridfinity drawer — WIP v0.1 (2026-05-30)
+
+A 2U slide-out drawer for the module BOTTOM whose floor is a true Gridfinity
+baseplate. New file: `Console10_drawer.scad` (parametric; `part =
+"faceplate"|"drawer"|"assembly"`). Compiles clean + manifold in OpenSCAD;
+fit-check previews at `preview/drawer_assembly_iso.png` / `_side.png`.
+
+**Architecture (locked with John):** faceplate-anchored, no floor hardware.
+- The **faceplate** is a 30° slanted bezel that bolts to the cheek **slant** rack
+  inserts (2 screws/side). Its two **C-channel slide rails are integral**, running
+  back along the floor into the cavity. It REPLACES `Console10_front_insert` on a
+  drawer module.
+- The **drawer** is a 5×4 Gridfinity box (210×168 mm field, standard 4.75 mm
+  interface) with side **tongues** riding the rails; its own 30° front nests
+  flush in the faceplate mouth (finger-pull slot).
+
+**Key params (as built):** face 247×87.9 mm, mouth 222×74 mm; drawer body
+220×183 mm; rail 8 mm / 6 mm slot, tongue 4×5 mm, `run_gap` 0.5; Gridfinity
+pitch 42, no-magnet "lite" baseplate.
+
+**NEXT STEPS to make it print-ready (none are open design questions):**
+1. **Drawer stop** — add a rear bump-stop in the rails + a removable front
+   retainer so the drawer can't pull fully out. (Not yet modeled.)
+2. **Rail overhang** — the C-channel lip overhangs its slot; add a 45° chamfer
+   under the lip and/or a split-rail print option. Decide print orientation.
+3. **Fit validation (first article):** tongue/slot `run_gap` and the Gridfinity
+   pocket fit are first-print tuning items.
+4. **Docs:** fold this into the README parts table + a designdoc v3.4 changelog
+   and the variants list once the geometry is frozen.
+
+**State:** `Console10_drawer.scad` is untracked (not committed). Previews are new
+files in `preview/`. Nothing else in the repo was changed.
+
+---
+
+## 16. Twin-MacroPad lower faceplate — v0.2 (2026-06-13)
+
+A plain 2U faceplate (`Console10_macropad_pair_faceplate.scad`; `part =
+"panel" | "mount_board" | "macropad_backplate"`) carrying **two Adafruit 5128
+MacroPad RP2040s** mounted end-to-end, each rotated 90° so the long axis runs
+across the panel (OLED/encoder ends out at the far left/right, PCBs butt at the
+centre seam). Each board drops into a rear pocket+collar; keys stay proud through
+the front.
+
+**Two bolt circles per pad (this is the key geometry).** The MacroPad's own PCB
+holes and the panel's backplate posts are **deliberately not concentric**:
+- **PCB mounting holes** — `mp_hx,mp_hy` = 52.07 × 81.28 mm (±26.04 × ±40.64).
+- **Panel posts** — `mp_post_sx,mp_post_sy` = ±38 × ±44, pushed *outboard* of the
+  pocket/collar wall (which reaches 32.65) so a backplate can bolt to the panel
+  clear of the board. A Ø7 post can't sit on the PCB-hole axis without fouling the
+  board, so the two circles stay offset by ~12 mm (across) / ~3.4 mm (along).
+  (Seen edge-on this reads as "posts offset from the MacroPad holes" — it's by
+  design, not a bug.)
+
+**Mounting board — v0.2 (NEW, replaces the two loose per-pad backplates).**
+`macropad_mount_board()` is **one** printed plate spanning both pads (~204 × 86 ×
+4 mm) that **bridges** the two bolt circles:
+- 8 × Ø3.4 flush holes on the post circle → bolts **down** onto all 8 panel posts.
+- 8 × Ø7 standoffs (8.4 mm tall, Ø3.4 thru) on the PCB circle → screw **up** into
+  the two PCBs (board bottom at z = −19, top on the post tips at z = −15,
+  standoffs reach the PCB back at z = −6.6).
+- Single welded solid, `Simple: yes`. Print flat-side down / standoffs up, no
+  supports. Plate ends ~2 mm inboard of each OLED/USB-C end so the ports stay
+  clear. Exported STL: `Console10_macropad_pair_backplate.stl`.
+- The older per-pad `macropad_backplate()` is kept in-file for reference only.
+
+**Possible next steps (not open design questions):** USB-C end relief, a central
+lightening cutout, and/or a keyed corner on the mount board; first-article fit
+check of standoff height vs PCB seat and the post screw engagement.
+
 ## 14. Revision history
 
 - **v2.0** — project reset
