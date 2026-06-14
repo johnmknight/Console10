@@ -33,14 +33,16 @@ U             = 44.45;
 interior_half = panel_width/2 - cheek_thick;   // 116.5
 cheek_ctr_x   = interior_half + cheek_thick/2; // 121.5
 
-// ---------- flat plate (plain 2U, same base as Console10_blank_2u) ----------
-n_u      = 2;
+// ---------- flat plate (3U: pads in the top, blank skirt below) ----------
+// Extended from 2U -> 3U: the blank lower area keeps the MacroPads (and their rear
+// mount-board assembly) HIGH so they clear the shelf/floor when mounted below the 7" monitor.
+n_u      = 3;
 plate_w  = 253;
-plate_h  = n_u * U;       // 88.9 — fills the slant beneath the display
+plate_h  = n_u * U;       // 133.35
 plate_t  = 3;
 
-// ---------- slant-insert mount holes (U-row-0 wide pair) ----------
-mount_y      = [50.80, 82.55];
+// ---------- slant-insert mount holes (3U rack rows, as the other 3U panels) ----------
+mount_y      = [50.80, 127.00];
 m10_32_clear = 5.5;
 
 // ---------- MacroPad RP2040 (STL-measured envelope + fab-print PCB) ----------
@@ -80,7 +82,7 @@ mp_post_h  = 10 + mp_lower;                     // 15
 // ---------- the two MacroPad centres (boards meet at x = 0) ----------
 mp_gap = 0;                                     // 0 = PCBs touch; raise for a centre gap/wall
 mp_cx  = mp_board_h/2 + mp_gap/2;               // 52.07
-mp_cy  = plate_h/2;                             // 44.45
+mp_cy  = plate_h - U;                           // 88.9 — pads pushed to the TOP (blank skirt below)
 // left pad: rot +90 (OLED -> far left); right pad: rot -90 (OLED -> far right)
 
 // ---------- backplate ----------

@@ -6,6 +6,7 @@
 //   - Pimoroni HyperPixel 4.0 Square Touch  (720x720 display)     CONFIRMED dims
 //   - Adafruit NeoSlider 5295 (vertical fader)         dims from Adafruit STEP CAD
 //   - Adafruit 0.91" 128x32 OLED 4440 (readout)        dims from Adafruit STEP CAD
+//   - 3x guarded toggle switches in a row below the screen (Shuttle switch guard)
 //
 // LAYOUT: the screen (left/center) and the slider+OLED column (right) are
 // re-centred as a balanced pair across the 3U plate now that the keypad is gone.
@@ -30,7 +31,25 @@ hp_lip   = 1.5; hp_winrev = 0.5;
 hp_window = hp_active + 2*hp_winrev;        // 73
 hp_clr   = 0.3; hp_pocket = hp_board + 2*hp_clr;   // 84.6
 hp_cx = -30;                                // screen column, left of centre
-hp_cy = plate_h/2;                          // vertically centred
+
+// ---------- 3 guarded toggle switches (row below the screen) ----------
+// Guard: ImAThingsGuy "Space Shuttle Toggle Switch Guard" (25 x 25 x 30, STL-meas;
+// public domain). Switch: COROTC SPST, 12 mm bushing; its own nut clamps the guard
+// to the FRONT face, so the panel only needs a 12 mm hole per switch.
+tog_n      = 3;
+tog_hole_d = 12.4;                          // 12 mm bushing + clearance
+tog_guard  = 25;                            // guard footprint (square) for spacing
+tog_pitch  = 32;                            // centre-to-centre (25 guard + ~7 gap)
+tog_cx     = hp_cx;                         // row centred under the screen
+tog_cy     = 19;                            // row height above the bottom edge
+tog_gap    = 7;                             // clear gap: screen bottom -> guard tops
+tog_recess   = 25.6;                        // square recess for the guard base (25 + 0.3/side)
+tog_recess_d = 2;                           // recess depth into the 3 mm panel (~1 mm floor left)
+tog_guard_rot = 90;                         // spin the guards about their axis (ring/opening direction)
+tog_guard_stl = "C:/3d files/NASA/switch guards/space-shuttle-switch-guard.stl";
+
+// Screen RAISED (was plate_h/2 centred) so the guard row fits beneath it.
+hp_cy = tog_cy + tog_guard/2 + tog_gap + hp_board/2;   // ~80.5
 
 // ---------- slider + OLED right column (Adafruit STEP CAD: repo Adafruit_CAD_Parts) ----------
 // OLED 4440: PCB 33.02 x 21.46, 4 holes 27.94 x 16.51 (M2.5) centred on the board,
@@ -46,17 +65,16 @@ oled_lip = plate_t - oled_glass_off;         // 0.5 front window lip; glass sits
 oled_pkt_clr = 0.4;                          // pocket clearance around the module
 oled_post_h  = 5;                            // tapped post depth behind the PCB (screws from rear)
 sld_bw  = 21.59;  sld_bh = 76.2;             // CAD PCB (vertical orientation)
-sld_house_w = 9.5;  sld_house_h = 75;        // slide-pot housing footprint = flush cutout (CAD)
+sld_house_w = 9.4;  sld_house_h = 75.1;      // slide-pot metal housing (measured; CAD STEP = 9.5 x 75.0)
 sld_house_z = 6.5;                           // housing top above PCB front (CAD)
 sld_clr = 0.4;                               // cut clearance around the housing
 sld_hole_dx = 16.51;  sld_hole_dy = 38.1;    // 4 PCB holes (across x along), vertical mount (CAD)
 sld_hole_d  = 2.6;                            // M2.5 clearance
 col_cx  = 60;                                // right column, right of centre
-// slider+OLED stack: PCBs TOUCHING (OLED on top, slider below), and the slider's
-// bottom edge sits 5 mm below the screen's bottom edge.
-screen_bottom = hp_cy - hp_board/2;          // 24.675
-sld_gap_below = 5;                           // slider bottom this far below the screen bottom
-sld_cy  = screen_bottom - sld_gap_below + sld_bh/2;        // slider centre
+// slider+OLED stack: PCBs TOUCHING (OLED on top, slider below), the column
+// vertically CENTRED on the right — decoupled from the screen, which is now raised
+// (keeping the old "5 mm below screen bottom" would push the OLED off the top).
+sld_cy  = plate_h/2 - oled_bh/2;                           // centres the touching stack
 oled_cy = sld_cy + sld_bh/2 + oled_bh/2;                   // OLED on top, PCB edges touching (0 gap)
 
 // ---------- slant-insert mount holes (perpendicular through the plate) ----------
@@ -104,22 +122,24 @@ module post(x, y, h, od, pilot) {
 }
 
 // =============================================================================
-// HYPERPIXEL BACKPLATE — screws to the screen's 4 HAT holes (58 x 49) from the
-// BACK of the plate (HAT holes are board-through); bolts to 4 panel posts. Plate
-// sits behind the GPIO header (z = -8).
-//
-// TODO: cut a header-cable exit through this plate, LARGE ENOUGH for the GPIO
-//   ribbon connector + cable bend radius (the off-panel Pi plugs in here). The
-//   plate is solid behind the screen right now and would foul the cable. Size
-//   and locate the opening from the header-edge photos in  g:\my drive\ .
+// HYPERPIXEL BACKPLATE — screws to the screen's HAT holes from the BACK; bolts to
+// 4 panel posts. Per the board photo, only the 2 HAT holes on the FPC/touch-flex
+// edge are usable — the other 2 are blocked by the GPIO header + ribbon cable — so
+// the plate mounts on 2 stems and has a clearance WINDOW for the GPIO connector +
+// cable on the opposite (GPIO) edge.
 // =============================================================================
 hp_board_back = seat_z - hp_rim_t;        // -3.1, screen PCB back plane
 hp_hat_xs = [-38, 20];                     // HAT hole X, board-centered (58 wide)  [verify]
 hp_hat_ys = [35.5, -13.5];                 // HAT hole Y (49 tall)                   [verify]
+hp_hat_use_y = hp_hat_ys[0];               // 35.5 = the usable (FPC-edge) HAT pair; flip to ys[1] if mirrored
+// GPIO connector + ribbon-cable slot — OPEN through the GPIO edge so the cable routes out
+hp_gpio_w = 58;                            // slot width (40-pin IDC ~53 + cable)
+hp_gpio_inner_y = -19;                     // slot inner end (board-rel Y); runs out past the edge
 hp_post_dx = 80;  hp_post_dy = 96;         // panel-post pattern (clears the neighbours)
 hp_post_h  = 10;                            // post length behind the panel
 hp_bp_t = 4;
 hp_bp_z = -hp_post_h;
+hp_bp_half_h = (hp_post_dy + 12)/2;        // 54 — backplate half-height (slot runs to this edge)
 mp_post_od = 7;  mp_post_pilot = 2.5;      // panel-post OD / M3 self-tap pilot
 
 module hyperpixel_backplate() {
@@ -128,18 +148,22 @@ module hyperpixel_backplate() {
         union() {
             translate([hp_cx, hp_cy, hp_bp_z - hp_bp_t/2])
                 cube([hp_post_dx + 12, hp_post_dy + 12, hp_bp_t], center = true);
-            for (hx = hp_hat_xs) for (hy = hp_hat_ys)        // HAT mounting standoffs (overlap plate 0.5)
-                translate([hp_cx + hx, hp_cy + hy, hp_bp_z - 0.5]) cylinder(d = 6, h = so_h + 0.5);
+            for (hx = hp_hat_xs)                             // 2 usable HAT standoffs (FPC edge only)
+                translate([hp_cx + hx, hp_cy + hp_hat_use_y, hp_bp_z - 0.5]) cylinder(d = 6, h = so_h + 0.5);
         }
         for (sx = [-1,1]) for (sy = [-1,1])                  // panel-post clearance (M3)
             translate([hp_cx + sx*hp_post_dx/2, hp_cy + sy*hp_post_dy/2, hp_bp_z - hp_bp_t - 0.1])
                 cylinder(d = 3.4, h = hp_bp_t + 0.2);
-        for (hx = hp_hat_xs) for (hy = hp_hat_ys) {          // HAT screws from the BACK: M2.5 clear + head counterbore
-            translate([hp_cx + hx, hp_cy + hy, hp_bp_z - hp_bp_t - 0.1])
+        for (hx = hp_hat_xs) {                               // HAT screws (2 usable holes) from the BACK
+            translate([hp_cx + hx, hp_cy + hp_hat_use_y, hp_bp_z - hp_bp_t - 0.1])
                 cylinder(d = 2.8, h = so_h + hp_bp_t + 0.2);
-            translate([hp_cx + hx, hp_cy + hy, hp_bp_z - hp_bp_t - 0.1])
+            translate([hp_cx + hx, hp_cy + hp_hat_use_y, hp_bp_z - hp_bp_t - 0.1])
                 cylinder(d = 5.0, h = 2.6);                  // recess the head flush with the back face
         }
+        // GPIO connector + ribbon-cable slot — runs from the inner end OUT through the
+        // GPIO edge (6 mm past it) so the cable exits the board edge.
+        translate([hp_cx, hp_cy + (hp_gpio_inner_y - hp_bp_half_h - 6)/2, hp_bp_z - hp_bp_t/2])
+            cube([hp_gpio_w, hp_gpio_inner_y + hp_bp_half_h + 6, hp_bp_t + 4], center = true);
     }
 }
 
@@ -160,10 +184,11 @@ module panel() {
             translate([hp_cx, hp_cy, plate_t - hp_lip/2])
                 cube([hp_window, hp_window, hp_lip + 0.1], center = true);
 
-            // Slider: slide-pot HOUSING flush cutout (knob proud; PCB screwed behind)
+            // Slider: slide-pot HOUSING flush cutout — SQUARE rectangle (not rounded)
+            // so the rectangular metal housing seats flush to the panel face (knob
+            // proud; PCB screwed behind). Housing top sits at z = plate_t.
             translate([col_cx, sld_cy, plate_t/2])
-                linear_extrude(plate_t + 2, center = true)
-                    rrect(sld_house_w + 2*sld_clr, sld_house_h + 2*sld_clr, (sld_house_w + 2*sld_clr)/2);
+                cube([sld_house_w + 2*sld_clr, sld_house_h + 2*sld_clr, plate_t + 2], center = true);
 
             // OLED active window — through the thin front lip only
             translate([col_cx, oled_cy, plate_t - oled_lip/2])
@@ -172,6 +197,15 @@ module panel() {
             // to the front lip (the module is bigger than the active window)
             translate([col_cx, oled_cy, (plate_t - oled_lip)/2 - 0.05])
                 cube([oled_mod_w + 2*oled_pkt_clr, oled_mod_h + 2*oled_pkt_clr, plate_t - oled_lip + 0.1], center = true);
+
+            // Toggle switches — square guard-base recess in the front face + bushing hole
+            for (i = [0 : tog_n-1]) {
+                tx = tog_cx + (i - (tog_n-1)/2)*tog_pitch;
+                translate([tx, tog_cy, -1])
+                    cylinder(d = tog_hole_d, h = plate_t + 2);                              // bushing hole (through)
+                translate([tx, tog_cy, plate_t - tog_recess_d/2 + 0.05])
+                    cube([tog_recess, tog_recess, tog_recess_d + 0.1], center = true);      // square base recess (front)
+            }
 
             // Slant-insert mount screws
             for (sx = [-cheek_ctr_x, cheek_ctr_x])
@@ -205,6 +239,12 @@ module devices() {
     // Slider: housing flush (top at panel face) + knob proud to 15.5 mm above PCB (9 mm proud)
     color("SeaGreen") translate([col_cx, sld_cy, plate_t - sld_house_z/2]) cube([sld_house_w, sld_house_h, sld_house_z], center = true);
     color("Black")    translate([col_cx, sld_cy, plate_t + 4.5]) cube([4, 6, 9], center = true);
+
+    // Guarded toggle switches — guard standing on the panel: square base seated in the
+    // recess (base bottom at the recess floor), ring vertical (rotate 90 about X).
+    color("Silver") for (i = [0 : tog_n-1])
+        translate([tog_cx + (i - (tog_n-1)/2)*tog_pitch, tog_cy, plate_t - tog_recess_d + 12.5])
+            rotate([0, 0, tog_guard_rot]) rotate([90, 0, 0]) import(tog_guard_stl, convexity = 6);
 }
 
 if (part == "hyperpixel_backplate") {

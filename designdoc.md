@@ -272,7 +272,7 @@ files in `preview/`. Nothing else in the repo was changed.
 
 ---
 
-## 16. Twin-MacroPad lower faceplate — v0.3 (2026-06-13)
+## 16. Twin-MacroPad lower faceplate — v0.4 (2026-06-14)
 
 A plain 2U faceplate (`Console10_macropad_pair_faceplate.scad`; `part =
 "panel" | "mount_board" | "macropad_backplate"`) carrying **two Adafruit 5128
@@ -316,6 +316,53 @@ holes and the panel's backplate posts are **deliberately not concentric**:
 **Possible next steps (not open design questions):** USB-C end relief at the
 widened ends, a central lightening cutout, and/or a keyed corner; first-article
 fit check of standoff height vs PCB seat and the post screw engagement.
+
+**v0.4 changes (2026-06-14):**
+- **Front lip cut flush to the PCB edge on both axes** (`mp_face_w = mp_pocket_w`,
+  `mp_face_h = mp_pocket_h`). The old 56 × 100 opening left a ~2 mm lip overhanging
+  the outer key columns (blocked keycaps) and the OLED/encoder ends (blocked the
+  display). No front lip now — retention is the rear mount board; the centre
+  divider stub is gone so the two openings read as one.
+- **Extended 2U → 3U** (`n_u = 3`, 133.35 mm). MacroPads pushed to the TOP
+  (`mp_cy = plate_h − U` = 88.9) with a blank skirt below, so the rear mount-board
+  assembly sits high and **clears the shelf/floor** when mounted below a 7" monitor
+  (the 2U rear stack collided with the floor). Mount rows → 3U `[50.80, 127.00]`.
+  Re-exported `Console10_macropad_pair_faceplate.stl`.
+
+## 17. Screen + Slider + OLED + guarded-toggle faceplate — v0.1 (2026-06-14)
+
+A 3U faceplate (`Console10_screen_slider_panel.scad`; `part = "panel" |
+"hyperpixel_backplate"`) — derived from the DSKY concept (`Console10_dsky_panel.scad`)
+with the MacroPad removed — carrying four device groups:
+
+- **Pimoroni HyperPixel 4.0 Square** (720×720 touch) — recessed pocket + front
+  window lip; 2-stem rear backplate (below).
+- **Adafruit NeoSlider 5295** vertical fader — metal housing **9.4 × 75.1 mm**
+  (measured; CAD STEP 9.5 × 75.0), **SQUARE** flush cutout so the rectangular
+  housing seats flush to the panel face (top at z = plate_t), knob proud.
+- **Adafruit 0.91" 128×32 OLED 4440** — recessed in a **module-sized pocket** (the
+  display module is bigger than the active window) so the glass sits ~0.5 mm behind
+  the front lip; 4-screw rear mount, active area centred on the hole pattern.
+- **3 × guarded toggle switches** in a row below the screen — COROTC SPST (12 mm
+  bushing) + the printable "Space Shuttle Toggle Switch Guard" (ImAThingsGuy, public
+  domain, 25 × 25 × 30 mm). Panel has a 12.4 mm bushing hole + a **square recess**
+  for the guard base (anti-rotation), guards oriented rings-vertical. Screen raised
+  to the top to clear the toggle row.
+
+**Component dims pulled from Adafruit STEP CAD** (`Adafruit_CAD_Parts` repo), parsed
+directly: NeoSlider holes **38.1 × 16.51** (the earlier 70-along value was wrong and
+would have missed the PCB holes), OLED holes 27.94 × 16.51, OLED active 22.384 × 5.584.
+
+**HyperPixel backplate** (`part = "hyperpixel_backplate"`): per the board photo, only
+the **2 HAT holes on the FPC edge are usable** (the GPIO header + ribbon block the
+other 2), so it mounts on 2 stems and bolts to 4 panel posts; a **cable slot runs out
+through the GPIO edge** (open U) for the 40-pin IDC + ribbon.
+
+STLs: `Console10_screen_slider_panel.stl`, `Console10_screen_slider_hp_backplate.stl`.
+The toggle guard prints from the downloaded `space-shuttle-switch-guard.stl`.
+
+**Open items:** HyperPixel HAT-hole positions still `[verify]`; guard cap is glue-on
+(no non-rotating press-fit); confirm the GPIO cable-exit edge.
 
 ## 14. Revision history
 
