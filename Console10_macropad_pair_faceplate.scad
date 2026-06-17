@@ -1,5 +1,13 @@
 // =============================================================================
-// CONSOLE10 — Twin-MacroPad Lower Faceplate  v0.1
+// CONSOLE10 — Twin-MacroPad Lower Faceplate  v0.2
+//
+// v0.2 (2026-06-17): added the guarded-switch row. OLED status display removed.
+// Six toggle switches (14.7 x 29.1 x 26.8 body) in the skirt at Y=42, X in the
+// post gaps [+/-24, +/-52, +/-80] so the bodies foul ONLY the mount board (which
+// is relieved at each). Space-shuttle-style flip GUARDS are FUSED into two 3-gang
+// banks (one per trio) — see guard_bank() / part="guard_bank". Panel carries 6
+// bushing holes + 2 sharp-cornered gang locating pockets (86 x 25, 2.5 mm deep).
+// Print: panel x1, mount_board x1, guard_bank3 x2. See Console10_macropad_pair_notes.md.
 //
 // The 2U panel that sits BENEATH the display faceplate (plain blank base, no
 // isogrid), carrying TWO Adafruit MacroPad RP2040s. Each MacroPad is rotated 90
@@ -86,36 +94,87 @@ mp_cy  = plate_h - U;                           // 88.9 — pads pushed to the T
 // left pad: rot +90 (OLED -> far left); right pad: rot -90 (OLED -> far right)
 
 // =============================================================================
-// LOWER-SKIRT ACCESSORIES (v0.5): a ROW of switch guards across the TOP of the skirt
-// (1 under the LEFT MacroPad + 5 right-aligned), with a 0.91" OLED status display
-// CENTRED BENEATH the first (left) switch. The panel carries only the guard HOLES +
-// square RECESSES — the printed shuttle guards are glued in separately.
+// LOWER-SKIRT ACCESSORIES: a ROW of switch guards across the TOP of the skirt
+// (1 under the LEFT MacroPad + 5 right-aligned). The panel carries only the guard
+// HOLES + square RECESSES — the printed shuttle guards are glued in separately.
+// (OLED status display removed.)
 // =============================================================================
-// 0.91" OLED 4440 (CAD dims) — recessed pocket so the glass sits ~0.5 mm behind the face
-oled_bw = 33.02;  oled_bh = 21.46;  oled_aw = 22.384;  oled_ah = 5.584;
-oled_hole_dx = 27.94;  oled_hole_dy = 16.51;
-oled_mod_w = 30.5;  oled_mod_h = 12;  oled_glass_off = 2.5;
-oled_lip = plate_t - oled_glass_off;          // 0.5 mm front window lip
-oled_pkt_clr = 0.4;  oled_post_h = 5;  oled_boss_pilot = 2.1;
-oled_le = -(mp_cx + mp_board_h/2);            // left MacroPad LEFT edge  (x = -104.14)
-oled_cx = oled_le + oled_bw/2;                // OLED left-aligned to that edge
-oled_cy = 16.5;                               // status display, centred BENEATH the first switch
-oled_hx = oled_hole_dx/2;  oled_hy = oled_hole_dy/2;
 
 // Switch guards (printed separately, GLUED in): panel gets only a 12 mm bushing
-// hole + a square base recess. 1 guard centred under the OLED, 5 right-aligned.
+// hole + a square base recess. 1 under the left MacroPad, 5 right-aligned.
 tog_hole_d = 12.4;  tog_recess = 25.6;  tog_recess_d = 2;
-tog_cy = 42;                                  // switch row Y (top of skirt, just below the MacroPad collar)
-tog_left_cx = oled_cx;                        // first guard, over the OLED (under the left MacroPad)
-tog_right_x = (mp_cx + mp_board_h/2) - 12.5;  // 91.64: rightmost guard's RIGHT side at the screen (MacroPad) right edge
-tog_pitch5  = 30.4;                           // pitch of the right-aligned row of 5
-function tog5_x(i) = tog_right_x - (4 - i)*tog_pitch5;   // i = 0..4
+tog_cy = 42;                                  // switch row Y (original height, top of skirt)
+// X positions chosen to sit in the CLEAR GAPS between the mount-board posts
+// (posts at X = +/-8.07 and +/-96.07): each switch clears every post by >=4 mm,
+// so the bodies foul ONLY the flat backplate (to be relieved there), never a post.
+tog_x = [-80, -52, -24, 24, 52, 80];
 
-// guard panel feature: bushing hole (through) + square base recess (front face)
-module guard_cut(cx) {
+// guard panel feature: just the toggle bushing hole (through). The base recess is
+// now ONE gang pocket per trio (gang_recess), not a square per switch.
+module guard_cut(cx)
     translate([cx, tog_cy, -1]) cylinder(d = tog_hole_d, h = plate_t + 2);
-    translate([cx, tog_cy, plate_t - tog_recess_d/2 + 0.05])
-        cube([tog_recess, tog_recess, tog_recess_d + 0.1], center = true);
+
+// ---- printed switch GUARD (space-shuttle style) — the part GLUED into the front
+// recess. STL bbox measured = 25.0 x 25.0 x 30.0, centred in XY, Z -15..+15.
+// NOTE: current recess (tog_recess = 25.6 sq x 2 mm deep) is too tight/shallow to
+// seat this base — resize the recess to the guard base + clearance once orientation
+// is confirmed. Tweak guard_z / guard_rx in the GUI to seat it on the front face.
+guard_stl = "C:/3d files/NASA/switch guards/space-shuttle-switch-guard.stl";
+show_guards = true;
+// STL hole axis = guard Y (cage on +Y, flat mount face on -Y), hole centred in X/Z.
+// rotate +90 about X puts the hole axis on the panel normal (Z) so it registers
+// with the bushing; origin then sits 12.5 mm (half the body) in front, seating the
+// -Y mount face on the panel front.
+guard_rx  = 90;
+guard_rz  = 90;               // spin about the panel normal so the cage reads vertical
+guard_z   = plate_t + 12.5;   // mount face on the front, cage facing the user
+module guard_mock(cx)
+    translate([cx, tog_cy, guard_z]) rotate([0, 0, guard_rz]) rotate([guard_rx, 0, 0])
+        import(guard_stl, convexity = 8);
+
+// One guard in the mounting orientation, hole on the Z axis, centred at origin.
+module one_guard()
+    rotate([0, 0, guard_rz]) rotate([guard_rx, 0, 0]) import(guard_stl, convexity = 8);
+
+// A BANK of n guards at the switch pitch, fused into ONE part (the overlapping
+// cages union together — the shuttle "gang" guard). Centred on X for printing.
+tog_pitch = tog_x[1] - tog_x[0];               // 28 — adjacent switch spacing
+module guard_bank(n = 3)
+    union() for (i = [0:n-1])
+        translate([(i - (n-1)/2) * tog_pitch, 0, 0]) one_guard();
+
+// ---- gang locating pocket: ONE per trio, sized to the fused 3-gang base ----
+// Base measured from Console10_guard_bank3.stl = 86 (X) x 25 (Y).
+gang_w  = 86;  gang_h = 25;  gang_clr = 0.5;  gang_recess_d = 2.5;
+gang_cx = [ (tog_x[0]+tog_x[1]+tog_x[2])/3, (tog_x[3]+tog_x[4]+tog_x[5])/3 ];  // [-52, 52]
+module gang_recess(cx)
+    translate([cx, tog_cy, plate_t - gang_recess_d/2 + 0.05])
+        linear_extrude(gang_recess_d + 0.1, center = true)
+            square([gang_w + 2*gang_clr, gang_h + 2*gang_clr], center = true);   // sharp corners
+
+// ---- guarded-switch MOCK (measured): mounts THROUGH the bushing hole — threaded
+// bushing + nut poke out the front (into the guard), the rectangular body hangs
+// behind the panel. Rendered exactly at each guard position so every clash
+// (mount board, posts, OLED) is visible. Fit-check only, never printed.
+sw_body_w   = 14.7;     // across the bushing
+sw_body_h   = 29.1;     // the long side of the body
+sw_body_d   = 26.8;     // depth BEHIND the panel back (z = 0 -> -sw_body_d)
+sw_body_clr = 1.0;      // air gap we want to keep around the body
+sw_body_vertical = true;   // true: 29.1 runs UP the plate (local Y); false: across (X)
+sw_bush_d    = 12;      // threaded bushing (through the 12.4 hole)
+sw_bush_proud = 8;      // bushing + nut sticking out the front face
+module switch_mock(cx) {
+    bw = sw_body_vertical ? sw_body_w : sw_body_h;
+    bh = sw_body_vertical ? sw_body_h : sw_body_w;
+    translate([cx, tog_cy, 0]) {
+        // body behind the panel (semi-transparent so overlaps show through the board)
+        color("Crimson", 0.5)
+            translate([0, 0, -sw_body_d/2]) cube([bw + 2*sw_body_clr, bh + 2*sw_body_clr, sw_body_d], center = true);
+        // threaded bushing + nut through the panel and proud at the front
+        color("Silver") translate([0, 0, -2]) cylinder(d = sw_bush_d, h = plate_t + sw_bush_proud + 2);
+        // toggle lever poking forward
+        color("DimGray") translate([0, 0, plate_t + sw_bush_proud]) cylinder(d = 4, h = 9);
+    }
 }
 
 // ---------- backplate ----------
@@ -129,7 +188,7 @@ show_backplate = true;
 part = "panel";          // "panel" | "macropad_backplate"
 $fn = 48;
 
-echo(str("TWIN-MACROPAD FACEPLATE v0.1 ", plate_w, " x ", plate_h, " (", n_u, "U) t", plate_t,
+echo(str("TWIN-MACROPAD FACEPLATE v0.2 ", plate_w, " x ", plate_h, " (", n_u, "U) t", plate_t,
          " | pads @ x=+/-", mp_cx, " (gap ", mp_gap, ") cy=", mp_cy,
          " | posts local +/-", mp_post_sx, " x +/-", mp_post_sy));
 
@@ -240,6 +299,18 @@ module mb_holes_local(so_h) {
             cylinder(d = 3.4, h = so_h + mb_t + 0.2);
 }
 
+// Relief through the backplate so a guarded-switch body passes cleanly (matches
+// the switch_mock footprint + a little clearance). Opens the board's lower edge
+// as a notch at each switch X — the switches sit in the post gaps, so these never
+// reach a post or a PCB standoff.
+module sw_board_relief(cx) {
+    bw = sw_body_vertical ? sw_body_w : sw_body_h;
+    bh = sw_body_vertical ? sw_body_h : sw_body_w;
+    rc = sw_body_clr + 0.5;                      // clearance around the body
+    translate([cx, tog_cy, mb_z - mb_t/2])
+        cube([bw + 2*rc, bh + 2*rc, mb_t + 4], center = true);
+}
+
 module macropad_mount_board() {
     so_h = mp_pcb_back - mb_z;                   // 8.4 standoff up to the PCB back
     difference() {
@@ -251,6 +322,7 @@ module macropad_mount_board() {
         }
         place_pad(-mp_cx,  90) mb_holes_local(so_h);
         place_pad( mp_cx, -90) mb_holes_local(so_h);
+        for (cx = tog_x) sw_board_relief(cx);    // switch-body clearance reliefs
     }
 }
 
@@ -276,14 +348,9 @@ module panel() {
             // USB-C side notches: open each pad's outer collar wall at the connector
             place_pad(-mp_cx,  90) mp_usb_notch_local();
             place_pad( mp_cx, -90) mp_usb_notch_local();
-            // OLED status display: active window through the front lip + module pocket
-            translate([oled_cx, oled_cy, plate_t - oled_lip/2])
-                cube([oled_aw, oled_ah, oled_lip + 0.1], center = true);
-            translate([oled_cx, oled_cy, (plate_t - oled_lip)/2 + 0.05])
-                cube([oled_mod_w + 2*oled_pkt_clr, oled_mod_h + 2*oled_pkt_clr, plate_t - oled_lip + 0.1], center = true);
-            // Switch-guard features (holes + square recesses): 1 under the OLED + 5 right-aligned
-            guard_cut(tog_left_cx);
-            for (i = [0:4]) guard_cut(tog5_x(i));
+            // Switch-guard features: 6 toggle bushing holes + 2 gang locating pockets
+            for (cx = tog_x) guard_cut(cx);
+            for (cx = gang_cx) gang_recess(cx);
             // slant-insert mount screws
             for (sx = [-cheek_ctr_x, cheek_ctr_x])
                 for (y = mount_y)
@@ -292,9 +359,6 @@ module panel() {
         // backplate mounting posts (added after the cuts so the pockets don't eat them)
         place_pad(-mp_cx,  90) mp_posts_local();
         place_pad( mp_cx, -90) mp_posts_local();
-        // OLED rear mounting posts (the OLED screws on from behind)
-        for (sx = [-1,1]) for (sy = [-1,1])
-            post(oled_cx + sx*oled_hx, oled_cy + sy*oled_hy, oled_post_h, 6, oled_boss_pilot);
     }
 }
 
@@ -304,9 +368,10 @@ module panel() {
 module devices() {
     color("Chocolate") place_pad(-mp_cx,  90) mp_mock_local();
     color("Peru")      place_pad( mp_cx, -90) mp_mock_local();
-    // OLED status display (mock; mounted separately, not printed with the panel)
-    color("DimGray") translate([oled_cx, oled_cy, -0.8]) cube([oled_bw, oled_bh, 1.6], center = true);
-    color("Cyan")    translate([oled_cx, oled_cy, plate_t - oled_lip - 0.05]) cube([oled_aw, oled_ah, 0.3], center = true);
+    // guarded switches at their mount points (red body = watch for collisions)
+    for (cx = tog_x) switch_mock(cx);
+    // printed switch guards (the STL that glues into the front recess)
+    if (show_guards) color("Khaki") for (cx = tog_x) guard_mock(cx);
 }
 
 // =============================================================================
@@ -331,6 +396,8 @@ if (part == "macropad_backplate") {            // old per-pad plate (kept for re
     color("Tan") macropad_backplate();
 } else if (part == "mount_board") {            // NEW single spanning board (print this)
     color("Tan") macropad_mount_board();
+} else if (part == "guard_bank") {             // 3 guards fused into one shuttle-gang part
+    color("Khaki") guard_bank(3);
 } else {
     color("Gainsboro") panel();
     if (show_devices) devices();
