@@ -1,3 +1,10 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="branding/console10_logo_dark.png">
+    <img alt="CONSOLE10" src="branding/console10_logo_light.png" width="520">
+  </picture>
+</p>
+
 # Console10
 
 Modular desktop **10" mini-rack housing system**, styled after NASA Mission Operations Control Room consoles. Each module is a self-contained 3D-printed enclosure that houses small-form-factor 10" mini-rack equipment (Pi mounts, small routers, Stream Decks, mini displays).
