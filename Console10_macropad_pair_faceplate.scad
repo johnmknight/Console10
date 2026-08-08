@@ -380,12 +380,27 @@ module devices() {
 // panel TOP is at slant_up + plate_h. Matches the lower-blank slant transform.
 // =============================================================================
 floor_t = 6;     // bottom-panel slab thickness (assembly reference)
-module macropad_pair_on_slant(slant_up = 0) {
+// with_devices / with_backplate added 2026-08-01 so a caller can ask for the
+// PANEL ALONE. Defaults are true, so every existing call behaves exactly as
+// before - this is purely additive.
+//
+// Why it was needed: the film's shot 08 exports this panel headless, and the
+// export failed with "The given mesh is not closed! Unable to convert to
+// CGAL_Nef_Polyhedron" (exit 0, 23.77 MB written anyway, 285.6 s). The cause is
+// devices() - it imports third-party meshes that are not watertight, and
+// mp_mock_local() wraps one in an intersection(), which is what forces the CGAL
+// conversion that fails. Those imports are fit-check mocks, exactly as this
+// file's own DEVICES header says. A render does not need them fused into the
+// panel; it can load them as separate objects, where manifoldness is irrelevant.
+//
+// -D cannot reach show_devices from a file that pulls this one in with use<>,
+// because -D binds only the MAIN file's top-level variables. Hence parameters.
+module macropad_pair_on_slant(slant_up = 0, with_devices = true, with_backplate = true) {
     translate([0, sin(slant_angle)*slant_up, floor_t + cos(slant_angle)*slant_up])
         rotate([90 - slant_angle, 0, 0]) {
             color("Gainsboro") panel();
-            if (show_devices)  devices();
-            if (show_backplate) color("Tan") macropad_mount_board();
+            if (show_devices && with_devices)  devices();
+            if (show_backplate && with_backplate) color("Tan") macropad_mount_board();
         }
 }
 

@@ -13,7 +13,7 @@ See `designdoc.md` (**v3.3**) for the full specification, including the accessor
 
 ## Architecture (v3.0)
 
-A module is **5 printed parts**: 2 isogrid **cheeks** + a one-piece **top** + a one-piece **bottom** + a **front** slant insert. The back is an open equipment plane.
+A module is **4 printed parts**: 2 isogrid **cheeks** + a one-piece **top** + a one-piece **bottom**. The back is an open equipment plane. The **front slant insert is an accessory**, not a cabinet part — see "Cabinet vs. accessories" below. (Corrected 2026-08-01; previously read "5 printed parts".)
 
 The v2.4–v2.5 split-half + centerline-dovetail panel scheme is **abandoned**. Top and bottom are now **single-piece** panels whose width aligns with the 10" mini-rack standard (~253 mm) — so each prints as **one part on a 255 mm bed**. Joinery is **rabbet-based** (no dovetail):
 
@@ -23,7 +23,7 @@ The v2.4–v2.5 split-half + centerline-dovetail panel scheme is **abandoned**. 
 
 ## Cabinet vs. accessories
 
-**"Console10" = the cabinet only**: 2 cheeks + top + bottom (+ front insert). Everything
+**"Console10" = the cabinet only**: 2 cheeks + top + bottom. Everything
 that mounts to it — display faceplates, the MacroPad panel, the screen/slider panel, blank
 fillers, the Gridfinity drawer — is a **swappable accessory faceplate** that bolts to the
 cheek **slant inserts** (front) or **back-edge inserts**. Panels are sized to the rack U
@@ -48,13 +48,15 @@ Plus assorted blanks / holders (`Console10_aux_2u_faceplate`, `..._bluray_2u_fac
 
 | File | Role | Status |
 |------|------|--------|
-| `designdoc.md` | Design spec | ✓ v3.0 |
-| `README.md` | This file | ✓ v3.0 |
-| `Console10_isogrid.scad` | **Cheek** (parametric source) | ✓ geometry current; top/bottom edge features still old tab-channels — **replace with rabbets** |
-| `NEW_NASA_TOP.stl` | **Top** panel (standalone model) | ✓ current |
-| `new_nasa_bottom.stl` | **Bottom** panel (standalone model) | ✓ current |
-| `NASA_Insert_Front.stl` | **Front** insert template (standalone model) | ✓ current |
-| `Console10_isogrid-new.stl` | Exported cheek (10 mm, current) | ✓ |
+| `designdoc.md` | Design spec | ✓ v3.3.1 |
+| `README.md` | This file | ✓ synced to v3.3.1 (2026-07-28) |
+| `Console10_isogrid.scad` | **Cheek** (parametric source) | ✓ v3.1 — rabbets on both top & bottom edges (old v2.4 tab-channels removed) |
+| `Console10_top.scad` | **Top** panel (parametric source) | ✓ v3.1 |
+| `Console10_bottom.scad` | **Bottom** panel (parametric source) | ✓ v3.1 |
+| `Console10_front_insert.scad` | **Front** insert (parametric source) | ✓ v3.1 |
+| `stl/Console10_cheek.stl` · `stl/Console10_top.stl` · `stl/Console10_bottom.stl` · `stl/Console10_front_insert.stl` | **Current exports — print these** | ✓ 2026-05-28 |
+| `NEW_NASA_TOP.stl` · `new_nasa_bottom.stl` · `NASA_Insert_Front.stl` | Reference STL models | superseded by the `.scad` parts |
+| `Console10_isogrid-new.stl` | Older cheek export (2026-05-17) | superseded by `stl/Console10_cheek.stl` |
 | `Console10_isogrid-do-not-delete.stl` | Old 6 mm cheek | superseded |
 | `Console10_top_panel_half.scad` | Split-half top | ✗ DEPRECATED |
 | `Console10_bottom_panel_half.scad` | Split-half bottom | ✗ DEPRECATED |
@@ -81,27 +83,49 @@ Plus assorted blanks / holders (`Console10_aux_2u_faceplate`, `..._bluray_2u_fac
 | Cheek thickness | **10 mm** |
 | Top/bottom panel width | **~253 mm** (10" mini-rack standard, single-piece bed-fit) |
 
-## Parts list (5 printed parts)
+## Parts list (4 printed parts + accessories)
+
+**The cabinet — this is what "four printed parts" means:**
 
 | Part | Count | Print orientation |
 |------|-------|-------------------|
 | Cheek (L + R mirror) | 2 | Flat, exterior face down, isogrid up |
 | Top panel | 1 | Flat (support rabbet overhang as needed) |
 | Bottom panel | 1 | Flat (support ridge overhang as needed) |
-| Front insert | 1 | Wedge oriented for minimal support |
+
+**Accessories — printable and legitimate, but never counted in the cabinet:**
+
+| Part | Count | Print orientation |
+|------|-------|-------------------|
+| Front slant insert | 1 | Wedge oriented for minimal support |
+| Slant cap | 1 | Glue-on filler; only meaningful with a display faceplate |
+| Faceplates (display / macropad / blank / …) | n | See the accessory table above |
+
+*Corrected 2026-08-01 — this heading read "(5 printed parts)" and the table listed the
+front insert as a cabinet part. The authoritative lists are `CABINET_PARTS` and
+`ACCESSORY_PARTS` in `Console10_module.scad`, which `wip\_parts.py` parses with no
+fallback, so any render's part count now comes from the SCAD rather than from this table.*
 
 ## OpenSCAD usage
 
 ```
 openscad Console10_isogrid.scad     # cheek (parametric)
-openscad Console10_module.scad      # full assembly — pending (import cheek + NASA STLs)
+openscad Console10_module.scad      # full fit-check assembly (built)
+
+# headless export of the whole cabinet, no faceplates:
+openscad -o module.stl -D show_front=true -D show_macropad=false \
+         -D show_display=false -D show_lower_blank=false Console10_module.scad
 ```
 
-Top / bottom / front are currently **standalone STL models** (`NEW_NASA_TOP.stl`, `new_nasa_bottom.stl`, `NASA_Insert_Front.stl`), not SCAD-generated. They can be `import()`-ed into an assembly file for fit-checking, or remodeled parametrically.
+**All four cabinet parts are parametric SCAD** as of v3.1 — `Console10_isogrid.scad`, `Console10_top.scad`, `Console10_bottom.scad`, `Console10_front_insert.scad`. `Console10_module.scad` `use<>`s all four and places them; that file is the authority on how the parts seat. Current exports are in `stl/`. The root-level `NEW_NASA_TOP.stl`, `new_nasa_bottom.stl` and `NASA_Insert_Front.stl` are the earlier hand-modelled generation, kept for reference only — they are not byte-identical to the current exports even where bounding boxes match, so don't print from them.
 
 ## Open items
 
-See `designdoc.md` §13. Highlights: replace cheek tab-channels with rabbets; reconcile final width vs rabbet geometry; correct front wedge to 30° if it must mate flush; finalize glue vs fasteners; build the `Console10_module.scad` assembly.
+See `designdoc.md` §13. Highlights: reconcile final width vs rabbet geometry; finalize glue vs fasteners; first-print validation of the 0.4 mm ridge/rabbet clearance; decide front-insert merge-into-bottom vs standalone + glue.
+
+Closed since this list was written: the cheek tab-channels **were** replaced with rabbets (v3.1, both top and bottom edges), the front wedge **is** 30° and mates flush, and `Console10_module.scad` **is** built.
+
+Closed 2026-08-01: `Console10_module.scad` used to draw `slant_cap_on_slant()` unconditionally; it is now gated behind `show_slant_cap` (default off — only meaningful with `show_display` on).
 
 ## Variants
 

@@ -37,6 +37,43 @@ show_display = false;  // Elecrow faceplate hidden (photo uses a GeeekPi monitor
 show_lower_blank = false; // 2U blank filler beneath the display (off: MacroPad occupies it)
 show_macropad   = true;  // twin-MacroPad panel, TOP at the 6th-7th slant-hole midpoint (s=133.35)
 show_cheeks     = true;  // off -> clean slant profile (no near cheek blocking the side view)
+show_slant_cap  = false; // ACCESSORY, not a cabinet part. designdoc.md L250: glue-on filler
+                         // closing the slant between the top panel and the top of a display
+                         // faceplate, so it is only meaningful when show_display is on.
+                         // Was called unconditionally with no flag (designdoc.md L22-25),
+                         // which put an extra body into the exploded render and contradicted
+                         // the printed-part count that shot 05 is built around.
+
+// ---------------------------------------------------------------------------
+// THE CABINET SET - the single authoritative answer to "how many parts?"
+//
+// A Console10 cabinet is FOUR printed parts. Everything else in this file is an
+// accessory: real, printable, and legitimate to show, but never counted in a
+// part-count claim and never present in the shot that counts the parts.
+//
+// This list exists because the count has now been wrong twice. The slant cap
+// leaked into the exploded render as an extra body; then the front slant insert
+// did the same. Both got through for the same reason - nothing anywhere said
+// which parts constitute the cabinet, so whatever the export emitted got
+// counted. Adding one more show_ flag would have fixed each instance and
+// prevented neither.
+//
+// Downstream consumers PARSE these two lists rather than restating them:
+//   C:\Users\john_\dev\Console10\wip\_parts.py  reads them with a regex and
+//   raises if they are missing. It deliberately has no fallback copy, because a
+//   fallback is how the drift starts. Adding or reclassifying a part here
+//   propagates to every render with no other edit.
+//
+// Keep the names identical to the _part_<name>.stl files the export writes.
+// ---------------------------------------------------------------------------
+CABINET_PARTS   = ["cheek_l", "cheek_r", "top", "bottom"];
+ACCESSORY_PARTS = ["front", "slant_cap", "display", "macropad", "blank"];
+// display / macropad / blank added 2026-07-31 for shot 08, which swaps
+// faceplates on the slant. They are real Console10 parts and genuinely
+// accessories, so naming them here is what keeps cabinet_only() correct when
+// the export starts emitting them - the alternative was a fourth category of
+// part that nothing classified, which is precisely how the count went wrong
+// the first two times. Purely additive: the cabinet set is untouched.
 
 slant_angle    = 30;        // front slant, degrees from vertical (matches the parts)
 // Mount the panel at the HIGHEST cheek slant insert: the faceplate's top screw
@@ -100,4 +137,5 @@ if (show_macropad)
 
 // Slant gap cap — glue-on filler closing the slant between the top panel and the
 // top of the display panel (laps 3 mm over the panel).
-color("Plum") slant_cap_on_slant();
+if (show_slant_cap)
+    color("Plum") slant_cap_on_slant();

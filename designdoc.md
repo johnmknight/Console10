@@ -1,9 +1,30 @@
 # CONSOLE10 — DESIGN DOCUMENT
 
-**Version 3.3**
-**Date: 2026-05-28**
+**Version 3.3.1**
+**Date: 2026-07-28**
 
 ---
+
+## v3.3.1 changelog — documentation only, no geometry change
+
+An audit against the files on disk found the doc contradicting itself in four places.
+No part was modified; only the descriptions of them.
+
+1. **§3.1 parts table** pointed at the superseded root-level STLs (`NEW_NASA_TOP.stl`,
+   `new_nasa_bottom.stl`, `NASA_Insert_Front.stl`, `Console10_isogrid-new.stl`) while §7
+   and §12 said the parametric `.scad` files supersede them. Now points at `stl/`, which
+   holds the current exports.
+2. **§9.2** listed the top as 16 mm thick and the front insert as 237.3 × 20.6 — the
+   dimensions of the *old* STLs, contradicting §7. Corrected to the measured current
+   parts (top 10 mm; insert 232.6 × 21.9 × 38).
+3. **§12** labelled this file "✓ v3.1" while the header said v3.3, and omitted `stl/`
+   entirely. Both fixed.
+4. The **slant cap** (`Console10_slant_cap.scad`) was undocumented. It is an *accessory*,
+   not a fifth-part-plus-one: a glue-on filler for the gap between the top panel and the
+   top of a fitted display faceplate. `Console10_module.scad` used to draw
+   `slant_cap_on_slant()` **unconditionally**, with no `show_` flag — fixed alongside this
+   audit: it is now gated behind `show_slant_cap` (default off, since it is only
+   meaningful when `show_display` is on).
 
 ## v3.3 changelog (vs v3.1)
 
@@ -40,7 +61,9 @@ The split-half + dovetail-castellation panel scheme (v2.4–v2.5) is **abandoned
 
 Console10 is a modular 10-inch mini-rack housing for desktop equipment, 3D-printed in PLA, styled after Apollo-era NASA mission-control hardware.
 
-A module is **five printed parts**: two trapezoidal isogrid **cheeks** (L/R sides), a single-piece **top** panel, a single-piece **bottom** panel, and a **front** slant insert (which may be merged into the bottom). The **back** face is an open equipment-mounting plane; 1U faceplates are user-installed. The **front slant** is also a mounting plane, with the front insert serving as filler/template.
+A module is **four printed parts**: two trapezoidal isogrid **cheeks** (L/R sides), a single-piece **top** panel, and a single-piece **bottom** panel. The **back** face is an open equipment-mounting plane; 1U faceplates are user-installed. The **front slant** is also a mounting plane.
+
+The **front slant insert** is an **accessory**, not a cabinet part — optional filler/template for the front slant, in the same category as the slant cap and the faceplates. Corrected 2026-08-01; this line previously read "five printed parts" and counted the insert. The authoritative lists live in `C:\Users\john_\dev\Console10\Console10_module.scad` as `CABINET_PARTS` and `ACCESSORY_PARTS`, which `C:\Users\john_\dev\Console10\wip\_parts.py` parses with no fallback — so the count in any render now comes from the SCAD rather than from prose. (Local, untracked backup of the previous version: `wip\_pre0801_designdoc.md.bak`, sha256 prefix `410F8B750A28F9A8` — `*.bak` is gitignored, so it exists only on JOHN-S-PC.)
 
 Panels register to the cheeks via **rabbet joinery** (§6–7) and are secured with glue or fasteners.
 
@@ -63,10 +86,16 @@ Panels register to the cheeks via **rabbet joinery** (§6–7) and are secured w
 
 | Part | Count | File (current) | Source | Role |
 |------|-------|----------------|--------|------|
-| Cheek | 2 | `Console10_isogrid-new.stl` | `Console10_isogrid.scad` | Side panel, right-trapezoid, isogrid, 10 mm thick |
-| Top | 1 | `NEW_NASA_TOP.stl` | STL model | Caps the top edge; rabbet receives the cheek top edges |
-| Bottom | 1 | `new_nasa_bottom.stl` | STL model | Floor; raised side ridges seat into cheek bottom-edge rabbets |
-| Front insert | 1 | `NASA_Insert_Front.stl` | STL model (template) | Slant filler; merge into bottom or print standalone + glue |
+| Cheek | 2 | `stl/Console10_cheek.stl` | `Console10_isogrid.scad` | Side panel, right-trapezoid, isogrid, 10 mm thick |
+| Top | 1 | `stl/Console10_top.stl` | `Console10_top.scad` | Caps the top edge; ridges seat into the cheek top-edge rabbets |
+| Bottom | 1 | `stl/Console10_bottom.stl` | `Console10_bottom.scad` | Floor; raised side ridges seat into cheek bottom-edge rabbets |
+| Front insert | 1 | `stl/Console10_front_insert.stl` | `Console10_front_insert.scad` | Slant filler spanning between the cheeks; merge into bottom or print standalone + glue |
+
+**Current exports live in `stl/`.** The root-level `Console10_isogrid-new.stl` (2026-05-17),
+`new_nasa_bottom.stl`, `NEW_NASA_TOP.stl` and `NASA_Insert_Front.stl` (all 2026-05-28 morning)
+predate the parametric sources and are retained for reference only — see §12. They are NOT
+byte-identical to the current exports even where the bounding boxes match, so do not print
+from them.
 
 No split halves, no separate rails, no centerline dovetail. Rail-mount holes are integral to each cheek's edge faces (§5).
 
@@ -170,9 +199,13 @@ The v2.4–v2.5 trapezoidal dovetail castellation at the panel centerline is **s
 | Part | Footprint (mm) | Thickness/Height | Fits 255 bed |
 |------|----------------|------------------|--------------|
 | Cheek | 228.6 × 205.45 | 10 mm | ✓ |
-| Top | 253.0 × 109.9 | 16 mm | ✓ |
+| Top | 253.0 × 110.0 | 10 mm | ✓ |
 | Bottom | 253.0 × 228.6 | 10 mm | ✓ |
-| Front insert | 237.3 long | 20.6 × 38 | ✓ |
+| Front insert | 232.6 long | 21.9 × 38 | ✓ |
+
+(Measured from the current `stl/` exports, 2026-07-28. The earlier "Top 16 mm" and
+"Front insert 237.3 long × 20.6" figures described the superseded root-level STLs and
+contradicted §7; both now agree.)
 
 ### 9.3 Print orientation
 - **Cheek**: flat on bed, **interior face down** (the isogrid is now on the exterior, so its pockets face up — no overhang). M3 insert holes in the top/bottom edges; rail holes in the slant/back edges.
@@ -213,7 +246,11 @@ The v2.4–v2.5 trapezoidal dovetail castellation at the panel centerline is **s
 
 | File | Status |
 |------|--------|
-| `designdoc.md` (this file) | ✓ v3.1 |
+| `designdoc.md` (this file) | ✓ v3.3.1 |
+| `stl/` — **current exports**: `Console10_cheek.stl`, `Console10_top.stl`, `Console10_bottom.stl`, `Console10_front_insert.stl` | ✓ exported 2026-05-28 13:36 from the parametric sources |
+| `stl/All-Parts.3mf` | slicer project (ignored by git — `*.3mf`) |
+| `stl/nasa switch  guards/` | printable toggle-switch guards |
+| `Console10_slant_cap.scad` / `_tall` | accessory: glue-on filler closing the slant between the top panel and the top of the display faceplate. NOT a cabinet part — only needed when a display faceplate is fitted |
 | `README.md` | ✓ (v3.0 layout; minor v3.1 joinery sync pending) |
 | `Console10_isogrid.scad` (cheek) | ✓ v3.1 — silhouette/isogrid + rabbets on both top & bottom edges |
 | `Console10_top.scad` | ✓ v3.1 — slab + side ridges (parametric) |
