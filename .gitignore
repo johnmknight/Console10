@@ -40,5 +40,7 @@ wip/
 *.png
 # ...EXCEPT the one tracked per-project thumbnail (produced on request)
 !thumbnail.png
+# ...and the film's overlay deliverables
+!marketing/overlays/*.png
 # (PNGs committed before this rule — logo, preview/ — stay tracked; git
 # ignores only apply to untracked files)
