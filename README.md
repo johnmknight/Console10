@@ -40,6 +40,8 @@ the cabinet + a chosen accessory on the slant.
 | `Console10_screen_slider_panel.scad` | 4" HyperPixel sq + NeoSlider fader + OLED + 3 toggle guards | 3U | v0.1 |
 | `Console10_dsky_panel.scad` | DSKY-style: HyperPixel + MacroPad + slider + OLED | 3U | v0.1 |
 | `Console10_drawer.scad` | Gridfinity slide-out drawer | 2U | WIP v0.1 |
+| `Console10_phone_2u_faceplate.scad` | Pixel 10 Pro XL dock: charger puck + eject lever (see `HANDOFF-phone-2u-faceplate.md`) | 2U slant @ s=133.35 | v0.2 |
+| `Console10_b860i_faceplate.scad` | ASUS B860-I rear-I/O cover plate (truenas2) | 2U | v0.1 |
 
 Plus assorted blanks / holders (`Console10_aux_2u_faceplate`, `..._bluray_2u_faceplate`,
 `..._lcd_simple_faceplate`, `..._sd_holder_handled`, `..._bit_holder_handled`, etc.).
@@ -51,6 +53,7 @@ Plus assorted blanks / holders (`Console10_aux_2u_faceplate`, `..._bluray_2u_fac
 | `designdoc.md` | Design spec | ✓ v3.3.1 |
 | `README.md` | This file | ✓ synced to v3.3.1 (2026-07-28) |
 | `Console10_isogrid.scad` | **Cheek** (parametric source) | ✓ v3.1 — rabbets on both top & bottom edges (old v2.4 tab-channels removed) |
+| `Console10_isogrid_vent.scad` | Cheek variant: isogrid field cut THROUGH for airflow (drop-in `cheek()` swap; mirrors `Console10_isogrid.scad` — keep in sync) | ✓ v3.0-vent · export `stl/Console10_cheek_vent.stl` |
 | `Console10_top.scad` | **Top** panel (parametric source) | ✓ v3.1 |
 | `Console10_bottom.scad` | **Bottom** panel (parametric source) | ✓ v3.1 |
 | `Console10_front_insert.scad` | **Front** insert (parametric source) | ✓ v3.1 |
@@ -62,6 +65,8 @@ Plus assorted blanks / holders (`Console10_aux_2u_faceplate`, `..._bluray_2u_fac
 | `Console10_bottom_panel_half.scad` | Split-half bottom | ✗ DEPRECATED |
 | `Console10_module.scad` | Full fit-check assembly (cabinet + accessory faceplates) | ✓ built |
 | `preview/` | Rendered previews | — |
+| `marketing/` | Promo materials: storyboard, shot board, video brief | — |
+| `wip/` | Scratch: animation runs, logs, backups (untracked except `_parts.py`) | local only |
 
 ## Standards (locked)
 
