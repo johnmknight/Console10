@@ -32,6 +32,10 @@ desktop.ini
 out.tmp
 err.tmp
 
+# Scratch: animation runs, logs, probe outputs, local backups. Files already
+# tracked in here (wip/_parts.py) keep showing their changes regardless.
+wip/
+
 # Render outputs are regenerable scratch — never commit PNGs...
 *.png
 # ...EXCEPT the one tracked per-project thumbnail (produced on request)
