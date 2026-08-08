@@ -31,3 +31,10 @@ desktop.ini
 *.log
 out.tmp
 err.tmp
+
+# Render outputs are regenerable scratch — never commit PNGs...
+*.png
+# ...EXCEPT the one tracked per-project thumbnail (produced on request)
+!thumbnail.png
+# (PNGs committed before this rule — logo, preview/ — stay tracked; git
+# ignores only apply to untracked files)
